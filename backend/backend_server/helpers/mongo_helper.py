@@ -76,6 +76,6 @@ class MongoHelper:
         """
         Returns a City object filtered by the id
         """
-        city = self.city_collection.findOne({ 'id' : cityId })
+        city = self.city_collection.find_one({ 'id' : cityId })
         city_obj = util.deserialize_model(city,City)
         return city_obj
