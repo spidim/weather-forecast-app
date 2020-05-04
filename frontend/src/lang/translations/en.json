@@ -1,0 +1,38 @@
+{
+  "maps": "Maps",
+  "forecasts": "Forecasts",
+  "about": "About",
+  "terms of use": "Terms of Use",
+  "language": "Language",
+
+  "term of use": "Term of Use",
+
+  "about info": "©Your Company Name Here",
+
+  "center": "Center",
+  "zoom": "Zoom",
+  "bounds": "Bounds",
+  "humidity": "Humidity",
+  "pressure": "Pressure",
+
+  "reset": "reset",
+
+  "map date": "Map date",
+  "map prompt": "City weather conditions. Select a city to view more",
+  "forecast prompt": "Choose one of the variables to view detailed forecast",
+  "mediterannea": "Mediterrannea",
+  "greece": "Greece",
+  "patras": "Patras",
+  "options": "Options",
+  "variable": "Variable",
+  "temperature": "Temperature",
+  "wind": "Wind",
+  "rainfall": "Rainfall",
+  "start point": "Start point",
+  "beginning": "Start",
+  "start animation": "Start animation",
+  "start": "Start",
+  "stop": "Stop",
+  "info": "Information",
+  "info prompt": "This weather forecast uses the Openweather API. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed rutrum scelerisque lorem aliquet malesuada. Integer eget hendrerit lacus. Aliquam mollis tristique leo, ac varius diam accumsan sed. Mauris quis magna at leo finibus lacinia a a justo. Vivamus ut quam nec libero dictum posuere. Integer et neque id leo auctor porttitor. Sed non auctor nulla. Fusce tempor id nisl in pulvinar. Nulla facilisi. Vestibulum egestas aliquam ultrices. Nulla tincidunt, lectus quis accumsan volutpat, nibh risus laoreet ex, a placerat mauris eros sed justo. Donec eu tempor odio. In malesuada odio mauris, vitae consectetur massa porttitor eget. Aenean ornare massa vel diam cursus commodo at in urna."
+}

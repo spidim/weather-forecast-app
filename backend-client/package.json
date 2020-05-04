@@ -1,0 +1,22 @@
+{
+  "name": "weather_forecast_api",
+  "version": "1.0.0",
+  "description": "This_is_the_swagger_definition_of_the_weather_forecast_API__For_more_info_contact_sdimopoulosirisweb_gr",
+  "license": "Proprietary",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha --recursive"
+  },
+  "browser": {
+    "fs": false
+  },
+  "dependencies": {
+    "superagent": "3.7.0",
+    "querystring": "0.2.0"
+  },
+  "devDependencies": {
+    "mocha": "~2.3.4",
+    "sinon": "1.17.3",
+    "expect.js": "~0.3.1"
+  }
+}

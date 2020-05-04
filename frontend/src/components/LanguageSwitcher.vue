@@ -1,0 +1,52 @@
+/* Language switcher component
+   Provides an interface to interact with vue-i18n for switching language
+*/
+
+<template>
+    <!--b-nav-item-dropdown :text="getActiveLanguage()" right-->
+    <b-nav-item-dropdown :text="$t('language')" right>
+        <b-dropdown-item v-for="item in locales"
+         v-on:click="switchLocale(item.locale)"
+         class="container-fluid p-0 m-0">
+            <!-- make active language bold -->
+            <div v-if="getActiveLocale() === item.locale">
+                <strong>{{item.language}}</strong>
+            </div>
+            <div v-else>
+                {{item.language}}
+            </div>
+        </b-dropdown-item>
+    </b-nav-item-dropdown>
+</template>
+
+<script type = "text/javascript" >
+import Vue from 'vue';
+import supportedLocales from '../lang/supportedLocales.js';
+
+export default {
+    name: 'language-switcher',
+
+    data: function() {
+        return {
+            locales: supportedLocales() /* supported locales */
+        }
+    },
+
+    methods: {
+    switchLocale: function(locale) {
+        /* switches locale */
+        this.$i18n.locale = locale;
+    },
+
+    getActiveLanguage: function() {
+        /* return language name of the active locale */
+        return this.locales.find(l => {return l.locale === this.$i18n.locale}).language;
+    },
+
+    getActiveLocale: function() {
+        /* return active locale */
+        return this.$i18n.locale;
+    }
+      }
+}
+</script>

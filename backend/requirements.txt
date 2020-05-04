@@ -1,0 +1,7 @@
+werkzeug==0.16.1
+connexion == 1.5.3
+python_dateutil == 2.6.0
+requests==2.22.0
+setuptools >= 21.0.0
+Flask-Cors==3.0.8
+pymongo==3.10.1

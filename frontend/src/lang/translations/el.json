@@ -1,0 +1,37 @@
+{
+  "maps": "Χάρτες",
+  "forecasts": "Προγνώσεις",
+  "about": "Σχετικά",
+  "terms of use": "Όροι Χρήσης",
+  "language": "Γλώσσα",
+
+  "term of use": "Όρος Χρήσης",
+
+  "about info": "©Το όνομα της εταιρίας σας",
+
+  "center": "Κέντρο",
+  "zoom": "Μεγέθυνση",
+  "bounds": "Όρια",
+  "humidity": "Υγρασία",
+  "humidity": "Πίεση",
+  "reset": "επαναφορά",
+
+  "map date": "Ημερομηνία χάρτη",
+  "map prompt": "Καιρικές συνθήκες πόλεων. Επιλέξτε μια πόλη για να δείτε περισσότερα",
+  "forecast prompt": "Επιλέξτε μια από τις υποστηριζόμενες μεταβλητές για να δείτε αναλυτικούς χάρτες",
+  "mediterannea": "Μεσόγειος",
+  "greece": "Ελλάδα",
+  "patras": "Πάτρα",
+  "options": "Επιλογές",
+  "variable": "Μεταβλητή",
+  "temperature": "Θερμοκρασία",
+  "wind": "Άνεμος",
+  "rainfall": "Βροχόπτωση",
+  "start point": "Σημείο έναρξης",
+  "beginning": "Αρχή",
+  "start animation": "Έναρξη animation",
+  "start" : "Έναρξη",
+  "stop": "Διακοπή",
+  "info": "Πληροφορίες",
+  "info prompt": "Η μετεωρολογική πρόγνωση χρησιμοποιεί το ανοιχτό API της OpenWeather. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent auctor libero at eros interdum laoreet. Praesent turpis leo, ultrices ut luctus in, gravida quis nunc. Integer auctor egestas felis et molestie. Quisque pellentesque tortor diam, at varius tellus mollis ut. Vivamus ac eros ac nunc rhoncus ultrices. Suspendisse rhoncus, tellus quis placerat vestibulum, nisi massa accumsan dolor, sed faucibus odio nisl pellentesque libero. Cras elementum nunc mi, in faucibus lorem tristique ut. Aenean id magna eu mauris vehicula congue."
+}
