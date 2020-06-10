@@ -46,6 +46,14 @@ Required environment variables at frontend/.env
 - OW_USER_TOKEN
 - MONGO_URI
 ```
+
+Required environment variables at ./.env
+
+```
+- MONGO_USER
+- MONGO_PASS
+```
+
 ### Backend JS swagger client
 
 Generated from the OpenAPI definition file found in definitions sub-dir.
