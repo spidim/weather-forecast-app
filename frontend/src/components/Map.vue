@@ -28,8 +28,15 @@
                     @update:zoom="zoomUpdated"
                     @update:center="centerUpdated"
                     @update:bounds="boundsUpdated">
-                    <l-tile-layer :url="url"></l-tile-layer>
-                    <l-marker v-for="city in allCityData"
+
+                    <l-tile-layer :url="mapUrl"></l-tile-layer>
+                    <l-tile-layer v-for="(url, index) in owGenerateUrls"
+                        :key="url"
+                        :url="url"
+                        :opacity="owLayersOpacity[index]"
+                    ></l-tile-layer>
+                    
+                    <l-marker v-for="city in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
                         :lat-lng="[city.coords.lat,city.coords.lon]"
                         :icon="l_icon(city.currWeatherIconId)">
                         <l-popup :options="{'maxWidth': 'auto'}">
@@ -99,6 +106,7 @@ import { Icon }  from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import PopupViewAlt from './PopupViewAlt.vue'
 import BackendApiHandler from '../utils/BackendApiHandler.js'
+import GlobalMercator from '../utils/globalmaptiles.js'
 
 // this part resolve an issue where the markers would not appear
 delete Icon.Default.prototype._getIconUrl;
@@ -120,11 +128,13 @@ export default {
     },
     data () {
         return {
-          url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+          mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
           zoom: 6,
-          center: [38.436111, 26.112442],
+          center: {lat: 38.436111, lng: 26.112442},
           bounds: null,
           allCityData: [],
+          owLayers: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'], // openweather tile layers,
+          owLayersOpacity: [0.6, 0.6, 0.6, 0.6, 0.6] // have not figured best values yet
         };
     },
     methods: {
@@ -156,7 +166,7 @@ export default {
             shadowSize:   [50, 64], // size of the shadow
             iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
         })
-    }
+    },
   },
   created() {
     console.log('Load our data first');
@@ -165,7 +175,7 @@ export default {
   computed: {
     center_simple() {
     /* formats center as "(lat, lng)" */
-        return "(" + this.center.toString().match(/\d+\.\d+/g).join(", ") + ")";
+        return `(${this.center.lat.toFixed(6)}, ${this.center.lng.toFixed(6)})`;
     },
 
     bounds_simple() {
@@ -183,6 +193,10 @@ export default {
         out = out.replace("_southWest", "SW");
         out = out.replace("_northEast", "NE");
         return out;
+    },
+    owGenerateUrls() {
+        /* creates urls for OpenWeather map layers */
+        return this.owLayers.map(layer => `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${process.env.OW_USER_TOKEN}`)
     },
   }
 }
