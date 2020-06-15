@@ -35,6 +35,19 @@
                         :url="url"
                         :opacity="owLayersOpacity[index]"
                     ></l-tile-layer>
+
+                    <l-control position="topright">
+                        <b-form-group :label="$t('active layers')">
+                            <b-form-checkbox-group
+                                class="text-left"
+                                size="sm"
+                                v-model="selected"
+                                :options="options"
+                                switches
+                                stacked
+                            ></b-form-checkbox-group>
+                        </b-form-group>
+                    </l-control>
                     
                     <l-marker v-for="city in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
                         :lat-lng="[city.coords.lat,city.coords.lon]"
@@ -101,7 +114,7 @@
 </template>
 
 <script>
-import {LMap, LTileLayer, LMarker, LIcon, LPopup} from 'vue2-leaflet'
+import {LMap, LTileLayer, LMarker, LIcon, LPopup, LControl} from 'vue2-leaflet'
 import { Icon }  from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import PopupViewAlt from './PopupViewAlt.vue'
@@ -124,7 +137,8 @@ export default {
         LMarker,
         LIcon,
         LPopup,
-        PopupViewAlt
+        PopupViewAlt,
+        LControl
     },
     data () {
         return {
@@ -132,9 +146,20 @@ export default {
           zoom: 6,
           center: {lat: 38.436111, lng: 26.112442},
           bounds: null,
+          
           allCityData: [],
-          owLayers: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'], // openweather tile layers,
-          owLayersOpacity: [0.6, 0.6, 0.6, 0.6, 0.6] // have not figured best values yet
+          
+          owLayers: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'], // openweather tile layers
+          owLayersOpacity: [0.6, 0.6, 0.6, 0.6, 0.6], // have not figured best values yet
+          
+          options: [ // switch box options
+            {text: this.$t('temperature'), value: 'temp_new'},
+            {text: this.$t('clouds'), value: 'clouds_new'},
+            {text: this.$t('precipitation'), value: 'precipitation_new'},
+            {text: this.$t('pressure'), value: 'pressure_new'},
+            {text: this.$t('wind'), value: 'wind_new'}
+          ],
+          selected: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'] // selected layers (all by default)
         };
     },
     methods: {
@@ -172,6 +197,16 @@ export default {
     console.log('Load our data first');
     this.initDataOnMap();
   },
+  beforeUpdate() {
+    // update switch box labels on languange change
+    this.options = [
+            {text: this.$t('temperature'), value: 'temp_new'},
+            {text: this.$t('clouds'), value: 'clouds_new'},
+            {text: this.$t('precipitation'), value: 'precipitation_new'},
+            {text: this.$t('pressure'), value: 'pressure_new'},
+            {text: this.$t('wind'), value: 'wind_new'}
+          ]
+  },
   computed: {
     center_simple() {
     /* formats center as "(lat, lng)" */
@@ -195,8 +230,8 @@ export default {
         return out;
     },
     owGenerateUrls() {
-        /* creates urls for OpenWeather map layers */
-        return this.owLayers.map(layer => `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${process.env.OW_USER_TOKEN}`)
+        /* creates urls for selected OpenWeather map layers */
+        return this.selected.map(layer => `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${process.env.OW_USER_TOKEN}`)
     },
   }
 }

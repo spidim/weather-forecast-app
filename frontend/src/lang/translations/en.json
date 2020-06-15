@@ -12,8 +12,15 @@
   "center": "Center",
   "zoom": "Zoom",
   "bounds": "Bounds",
+  
+  "temperature": "Temperature",
   "humidity": "Humidity",
   "pressure": "Pressure",
+  "wind": "Wind",
+  "clouds": "Clouds",
+  "precipitation": "Precipitation",
+
+  "active layers": "Active layers",
 
   "reset": "reset",
 
@@ -25,8 +32,6 @@
   "patras": "Patras",
   "options": "Options",
   "variable": "Variable",
-  "temperature": "Temperature",
-  "wind": "Wind",
   "rainfall": "Rainfall",
   "start point": "Start point",
   "beginning": "Start",

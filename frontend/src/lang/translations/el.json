@@ -12,8 +12,16 @@
   "center": "Κέντρο",
   "zoom": "Μεγέθυνση",
   "bounds": "Όρια",
+  
+  "temperature": "Θερμοκρασία",
   "humidity": "Υγρασία",
-  "humidity": "Πίεση",
+  "pressure": "Πίεση",
+  "wind": "Άνεμος",
+  "clouds": "Σύννεφα",
+  "precipitation": "Υετός",
+
+  "active layers": "Ενεργές στρώσεις",
+  
   "reset": "επαναφορά",
 
   "map date": "Ημερομηνία χάρτη",
@@ -24,8 +32,7 @@
   "patras": "Πάτρα",
   "options": "Επιλογές",
   "variable": "Μεταβλητή",
-  "temperature": "Θερμοκρασία",
-  "wind": "Άνεμος",
+  
   "rainfall": "Βροχόπτωση",
   "start point": "Σημείο έναρξης",
   "beginning": "Αρχή",
