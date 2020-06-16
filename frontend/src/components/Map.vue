@@ -37,16 +37,21 @@
                     ></l-tile-layer>
 
                     <l-control position="topright">
-                        <b-form-group :label="$t('active layers')">
-                            <b-form-checkbox-group
-                                class="text-left"
-                                size="sm"
-                                v-model="selected"
-                                :options="options"
-                                switches
-                                stacked
-                            ></b-form-checkbox-group>
-                        </b-form-group>
+                        <b-dropdown right :text="$t('active layers')" class="m-0 p-0" size="sm">
+                            <b-dropdown-form class="m-0 p-0">
+                                <b-form-group>
+                                    <b-form-checkbox-group
+                                        class="text-left"
+                                        size="xs"
+                                        v-model="selected"
+                                        :options="options"
+                                        switches
+                                        stacked
+                                    >
+                                    </b-form-checkbox-group>
+                                </b-form-group>
+                            </b-dropdown-form>
+                        </b-dropdown>
                     </l-control>
                     
                     <l-marker v-for="city in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
@@ -95,7 +100,7 @@
             </b-col>
 
             <b-col cols=2>
-                <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ center_simple }}</span>
+                <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ centerSimple }}</span>
             </b-col>
 
             <b-col cols=2>
@@ -103,7 +108,7 @@
             </b-col>
 
             <b-col cols=6>
-                <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ bounds_simple }}</span>
+                <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ boundsSimple }}</span>
             </b-col>
 
             <b-col>
@@ -119,7 +124,6 @@ import { Icon }  from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import PopupViewAlt from './PopupViewAlt.vue'
 import BackendApiHandler from '../utils/BackendApiHandler.js'
-import GlobalMercator from '../utils/globalmaptiles.js'
 
 // this part resolve an issue where the markers would not appear
 delete Icon.Default.prototype._getIconUrl;
@@ -150,16 +154,16 @@ export default {
           allCityData: [],
           
           owLayers: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'], // openweather tile layers
-          owLayersOpacity: [0.6, 0.6, 0.6, 0.6, 0.6], // have not figured best values yet
+          owLayersOpacity: [1, 1, 1, 1, 1], // have not figured best values yet
           
           options: [ // switch box options
-            {text: this.$t('temperature'), value: 'temp_new'},
-            {text: this.$t('clouds'), value: 'clouds_new'},
-            {text: this.$t('precipitation'), value: 'precipitation_new'},
-            {text: this.$t('pressure'), value: 'pressure_new'},
-            {text: this.$t('wind'), value: 'wind_new'}
+            { text: this.$t('temperature'), value: 'temp_new'} ,
+            { text: this.$t('clouds'), value: 'clouds_new' },
+            { text: this.$t('precipitation'), value: 'precipitation_new' },
+            { text: this.$t('pressure'), value: 'pressure_new' },
+            { text: this.$t('wind'), value: 'wind_new' }
           ],
-          selected: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'] // selected layers (all by default)
+          selected: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'] // selected layers (all by defaults, also check 'activeLayers' item in localStorage
         };
     },
     methods: {
@@ -196,8 +200,15 @@ export default {
   created() {
     console.log('Load our data first');
     this.initDataOnMap();
+    
+    if(window.localStorage.getItem('activeLayers')) { // load control panel options from local storage
+        this.selected = JSON.parse(window.localStorage.getItem('activeLayers'))
+    }
   },
   beforeUpdate() {
+    // save control panel options
+    window.localStorage.setItem('activeLayers', JSON.stringify(this.selected));
+    
     // update switch box labels on languange change
     this.options = [
             {text: this.$t('temperature'), value: 'temp_new'},
@@ -208,12 +219,12 @@ export default {
           ]
   },
   computed: {
-    center_simple() {
+    centerSimple() {
     /* formats center as "(lat, lng)" */
         return `(${this.center.lat.toFixed(6)}, ${this.center.lng.toFixed(6)})`;
     },
 
-    bounds_simple() {
+    boundsSimple() {
     /* formats bounds as "SW: (lat, lng) NE: (lat, lng)" */
         var out = "";
         if (this.bounds) {
