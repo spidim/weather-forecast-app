@@ -78,17 +78,18 @@ const config = {
     hot: true,
     overlay: true,
     open: true,
+    openPage: 'http://localhost:8080/'
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
-	  entry: 'index.html',
+	    entry: 'index.html',
       template: 'index.html',
       title: 'demo web forecast',
       inject: 'body'
     }),
-	new MiniCssExtractPlugin({filename:"main.css"}),
-	new VueLoaderPlugin(),
+	  new MiniCssExtractPlugin({filename:"main.css"}),
+	  new VueLoaderPlugin(),
     new Dotenv()
   ],
   devtool: '#eval-source-map'
