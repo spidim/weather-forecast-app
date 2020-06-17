@@ -19,6 +19,7 @@
 	  <b-navbar-nav class="ml-auto">
 		<b-nav-item><router-link class="regular" to="/" exact>{{$t('maps')}}</router-link></b-nav-item>
 		<b-nav-item><router-link class="regular" to="/forecast">{{$t('forecasts')}}</router-link></b-nav-item>
+		<b-nav-item><router-link class="regular" to="/meteomap">{{$t('meteomap')}}</router-link></b-nav-item>
 		<b-nav-item><router-link class="regular" to="/about">{{$t('about')}}</router-link></b-nav-item>
 		<b-nav-item><router-link class="regular" to="/terms">{{$t('terms of use')}}</router-link></b-nav-item>
 		<LanguageSwitcher></LanguageSwitcher>

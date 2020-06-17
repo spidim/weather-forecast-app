@@ -11,7 +11,7 @@
 <div class="popup">
     <b-card no-body>
         <b-tabs pills>
-            <b-tab no-body v-for="(forecastValue, forecastName, index) in forecast_vars" :title="$t(forecastName)">
+            <b-tab no-body v-for="(forecastValue, forecastName, index) in forecast_vars" :title="$t(forecastName) :key="index">
                 <b-container style="overflow: auto;">
                     <b-row>
                         <b-button-group size="sm" style="z-index: 1; position: fixed; top: 55px; left: 30px;" class="smooth slow"

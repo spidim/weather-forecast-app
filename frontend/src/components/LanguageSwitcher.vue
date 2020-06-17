@@ -5,9 +5,10 @@
 <template>
     <!--b-nav-item-dropdown :text="getActiveLanguage()" right-->
     <b-nav-item-dropdown :text="$t('language')" right>
-        <b-dropdown-item v-for="item in locales"
-         v-on:click="switchLocale(item.locale)"
-         class="container-fluid p-0 m-0">
+        <b-dropdown-item v-for="item in locales" :key="item.locale"
+            v-on:click="switchLocale(item.locale)"
+            class="container-fluid p-0 m-0"
+        >
             <!-- make active language bold -->
             <div v-if="getActiveLocale() === item.locale">
                 <strong>{{item.language}}</strong>

@@ -9,10 +9,6 @@
 
 <template>
     <b-container fluid>
-        <b-alert show variant="dark" dismissible>
-          {{$t('map prompt')}}
-        </b-alert>
-
         <b-row class="topinfo">
             <b-col>
             </b-col>
@@ -31,16 +27,34 @@
                     @update:bounds="boundsUpdated">
 
                     <l-tile-layer :url="mapUrl"></l-tile-layer>
-                    
-                    <l-marker v-for="city in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
-                        :lat-lng="[city.coords.lat,city.coords.lon]"
-                        :icon="l_icon(city.currWeatherIconId)">
-                        <l-popup :options="{'maxWidth': 'auto'}">
-                            <PopupViewAlt :forecast="city.forecastInfo"
-                                :name="city.name">
-                            </PopupViewAlt>
-                        </l-popup>
-                    </l-marker>
+                    <l-tile-layer v-for="(url, index) in owGenerateUrls"
+                        :key="url"
+                        :url="url"
+                        :opacity="owLayersOpacity[index]"
+                    ></l-tile-layer>
+
+                    <l-control-attribution
+                        position="bottomright"
+                        prefix="<a href='https://openweathermap.org/'>OpenWeather</a>"
+                    ></l-control-attribution>
+
+                    <l-control position="topright">
+                        <b-dropdown right :text="$t('active layers')" class="m-0 p-0" size="sm">
+                            <b-dropdown-form class="m-0 p-0">
+                                <b-form-group>
+                                    <b-form-checkbox-group
+                                        class="text-left"
+                                        size="xs"
+                                        v-model="activeLayers"
+                                        :options="options"
+                                        switches
+                                        stacked
+                                    >
+                                    </b-form-checkbox-group>
+                                </b-form-group>
+                            </b-dropdown-form>
+                        </b-dropdown>
+                    </l-control>
                 </l-map>
             </b-col>
 
@@ -97,29 +111,16 @@
 </template>
 
 <script>
-import {LMap, LTileLayer, LMarker, LIcon, LPopup} from 'vue2-leaflet'
-import { Icon }  from 'leaflet'
+import { LMap, LTileLayer, LControl, LControlAttribution } from 'vue2-leaflet'
 import 'leaflet/dist/leaflet.css'
-import PopupViewAlt from './PopupViewAlt.vue'
-import BackendApiHandler from '../utils/BackendApiHandler.js'
 
-// this part resolve an issue where the markers would not appear
-delete Icon.Default.prototype._getIconUrl;
-
-Icon.Default.mergeOptions({
-  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-  iconUrl: require('leaflet/dist/images/marker-icon.png'),
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png')
-});
 export default {
-    name: 'Map',
+    name: 'MeteoMap',
     components: {
         LMap,
         LTileLayer,
-        LMarker,
-        LIcon,
-        LPopup,
-        PopupViewAlt
+        LControl,
+        LControlAttribution
     },
     data () {
         return {
@@ -127,7 +128,18 @@ export default {
           zoom: 6,
           center: {lat: 38.436111, lng: 26.112442},
           bounds: null,
-          allCityData: [],
+          
+          owLayers: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'], // openweather tile layers
+          owLayersOpacity: [1, 1, 1, 1, 1], // layers opacity (have not figured best values yet)
+          
+          options: [ // switch box options
+            { text: this.$t('temperature'), value: 'temp_new'} ,
+            { text: this.$t('clouds'), value: 'clouds_new' },
+            { text: this.$t('precipitation'), value: 'precipitation_new' },
+            { text: this.$t('pressure'), value: 'pressure_new' },
+            { text: this.$t('wind'), value: 'wind_new' }
+          ],
+          activeLayers: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'] // selected layers (all by default, also checks 'activeLayers' item in localStorage
         };
     },
     methods: {
@@ -140,30 +152,24 @@ export default {
     boundsUpdated (bounds) {
       this.bounds = bounds;
     },
-    parseAllCityInfo(error, data, response) {
-        if (error) {
-            console.error(error);
-        } else {
-            console.log('API called successfully. Returned data: ' + JSON.stringify(data));
-            this.allCityData = data;
-        }
-    },
-    initDataOnMap() {
-        const backendapi = new BackendApiHandler();
-        backendapi.getAllCityInfo(this.parseAllCityInfo);
-    },
-    l_icon(icon) {
-        return L.icon({
-            iconUrl: icon,
-            iconSize:     [64, 64], // size of the icon
-            shadowSize:   [50, 64], // size of the shadow
-            iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
-        })
-    },
   },
   created() {
-    console.log('Load our data first');
-    this.initDataOnMap();
+    if(window.localStorage.getItem('activeLayers')) { // load control panel options from local storage
+        this.activeLayers = JSON.parse(window.localStorage.getItem('activeLayers'))
+    }
+  },
+  beforeUpdate() {
+    // save control panel options
+    window.localStorage.setItem('activeLayers', JSON.stringify(this.activeLayers));
+    
+    // update switch box labels on languange change
+    this.options = [
+            {text: this.$t('temperature'), value: 'temp_new'},
+            {text: this.$t('clouds'), value: 'clouds_new'},
+            {text: this.$t('precipitation'), value: 'precipitation_new'},
+            {text: this.$t('pressure'), value: 'pressure_new'},
+            {text: this.$t('wind'), value: 'wind_new'}
+          ]
   },
   computed: {
     centerSimple() {
@@ -186,6 +192,10 @@ export default {
         out = out.replace("_southWest", "SW");
         out = out.replace("_northEast", "NE");
         return out;
+    },
+    owGenerateUrls() {
+        /* creates urls for selected OpenWeather map layers */
+        return this.activeLayers.map(layer => `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${process.env.OW_USER_TOKEN}`)
     },
   }
 }

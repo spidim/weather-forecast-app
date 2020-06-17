@@ -6,6 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap-vue/dist/bootstrap-vue.css"
 import Map from './components/Map.vue';
 import Forecasts from './components/Forecasts.vue';
+import MeteoMap from './components/MeteoMap.vue';
 import About from './components/About.vue'
 import Terms from './components/Terms.vue'
 import VueI18n from 'vue-i18n';
@@ -23,6 +24,7 @@ const i18n = new VueI18n({
 
 const routes = [
   { path: '/forecast', component: Forecasts },
+  { path: '/meteomap', component: MeteoMap },
   { path: '/', component: Map },
   { path: '/about', component: About },
   { path: '/terms', component: Terms }
