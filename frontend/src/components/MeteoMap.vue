@@ -122,81 +122,93 @@ export default {
         LControl,
         LControlAttribution
     },
+    
     data () {
         return {
-          mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-          zoom: 6,
-          center: {lat: 38.436111, lng: 26.112442},
-          bounds: null,
+            mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+            zoom: 6,
+            center: { lat: 38.436111, lng: 26.112442 },
+            bounds: null,
           
-          owLayers: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'], // openweather tile layers
-          owLayersOpacity: [1, 1, 1, 1, 1], // layers opacity (have not figured best values yet)
+            owLayers: [ 'temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new' ], // openweather tile layers
+            owLayersOpacity: [ 1, 1, 1, 1, 1 ], // layers opacity (have not figured best values yet)
           
-          options: [ // switch box options
-            { text: this.$t('temperature'), value: 'temp_new'} ,
-            { text: this.$t('clouds'), value: 'clouds_new' },
-            { text: this.$t('precipitation'), value: 'precipitation_new' },
-            { text: this.$t('pressure'), value: 'pressure_new' },
-            { text: this.$t('wind'), value: 'wind_new' }
-          ],
-          activeLayers: ['temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new'] // selected layers (all by default, also checks 'activeLayers' item in localStorage
+            options: [], // switch box options
+            activeLayers: [] // selected layers (temperature and clouds by default, checks 'activeLayers' item in localStorage on created()
         };
     },
-    methods: {
-    zoomUpdated (zoom) {
-      this.zoom = zoom;
-    },
-    centerUpdated (center) {
-      this.center = center;
-    },
-    boundsUpdated (bounds) {
-      this.bounds = bounds;
-    },
-  },
-  created() {
-    if(window.localStorage.getItem('activeLayers')) { // load control panel options from local storage
-        this.activeLayers = JSON.parse(window.localStorage.getItem('activeLayers'))
-    }
-  },
-  beforeUpdate() {
-    // save control panel options
-    window.localStorage.setItem('activeLayers', JSON.stringify(this.activeLayers));
     
-    // update switch box labels on languange change
-    this.options = [
-            {text: this.$t('temperature'), value: 'temp_new'},
-            {text: this.$t('clouds'), value: 'clouds_new'},
-            {text: this.$t('precipitation'), value: 'precipitation_new'},
-            {text: this.$t('pressure'), value: 'pressure_new'},
-            {text: this.$t('wind'), value: 'wind_new'}
-          ]
-  },
-  computed: {
-    centerSimple() {
-    /* formats center as "(lat, lng)" */
-        return `(${this.center.lat.toFixed(6)}, ${this.center.lng.toFixed(6)})`;
-    },
+    methods: {
+        zoomUpdated (zoom) {
+            this.zoom = zoom;
+        },
 
-    boundsSimple() {
-    /* formats bounds as "SW: (lat, lng) NE: (lat, lng)" */
-        var out = "";
-        if (this.bounds) {
-            Object.keys(this.bounds).forEach(
-                (el) => {
-                    // add values for each property
-                    out += el + ": (" + Object.values(this.bounds[el]).join(", ") + ") ";
-                }
-            )
+        centerUpdated (center) {
+            this.center = center;
+        },
+
+        boundsUpdated (bounds) {
+            this.bounds = bounds;
+        },
+
+        populateOptions() {
+        // switch box options
+            return [
+                { text: this.$t('temperature'), value: 'temp_new'} ,
+                { text: this.$t('clouds'), value: 'clouds_new' },
+                { text: this.$t('precipitation'), value: 'precipitation_new' },
+                { text: this.$t('pressure'), value: 'pressure_new' },
+                { text: this.$t('wind'), value: 'wind_new' }
+            ]
+        }
+    },
+    
+    created() {
+        if(window.localStorage.getItem('activeLayers')) { // load control panel options from local storage
+            this.activeLayers = JSON.parse(window.localStorage.getItem('activeLayers'))
+        }
+        else {
+            this.activeLayers = ['temp_new', 'clouds_new'] // default options
         }
 
-        out = out.replace("_southWest", "SW");
-        out = out.replace("_northEast", "NE");
-        return out;
+        this.options = this.populateOptions();
     },
-    owGenerateUrls() {
-        /* creates urls for selected OpenWeather map layers */
-        return this.activeLayers.map(layer => `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${process.env.OW_USER_TOKEN}`)
+    
+    beforeUpdate() {
+        // save control panel options
+        window.localStorage.setItem('activeLayers', JSON.stringify(this.activeLayers));
+        
+        // update switch box labels on languange change
+        this.options = this.populateOptions();
     },
-  }
+    
+    computed: {
+        centerSimple() {
+        /* formats center as "(lat, lng)" */
+            return `(${this.center.lat.toFixed(6)}, ${this.center.lng.toFixed(6)})`;
+        },
+
+        boundsSimple() {
+        /* formats bounds as "SW: (lat, lng) NE: (lat, lng)" */
+            let out = "";
+            if (this.bounds) {
+                Object.keys(this.bounds).forEach(
+                    (el) => {
+                        // add values for each property
+                        out += el + ": (" + Object.values(this.bounds[el]).join(", ") + ") ";
+                    }
+                )
+            }
+
+            out = out.replace("_southWest", "SW");
+            out = out.replace("_northEast", "NE");
+            return out;
+        },
+        
+        owGenerateUrls() {
+            /* creates urls for active OpenWeather map layers */
+            return this.activeLayers.map(layer => `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${process.env.OW_USER_TOKEN}`)
+        },
+    }
 }
 </script>

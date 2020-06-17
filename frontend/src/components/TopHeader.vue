@@ -51,6 +51,7 @@ export default {
 
 .regular:hover {
 	color: yellow;
+	text-decoration: none;
 }
 
 .router-link-active, .router-link-active:hover {
@@ -58,5 +59,9 @@ export default {
 	text-decoration: none;
     font-weight: bold;
 	color: white;
+}
+
+*:focus {
+	outline: none;
 }
 </style>
