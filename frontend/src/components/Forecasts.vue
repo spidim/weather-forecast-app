@@ -32,15 +32,16 @@
                         :items="forecast_items"
                         :fields="forecast_fields"
                     >
-                        <template v-slot:cell(city)="data">
+                        <template v-slot:[translateTableKey()]="data">
                             <!-- click city name to load plot -->
                             <a href="" v-on:click="toggleShowPlot($event, data.value)">{{ data.value }}</a>
                         </template>
+                        
                     </b-table>
                 </b-col>
             </b-row>
-            <h4>Plot for {{ allCityData[selectedCity].name }}</h4>
-            <LineChart v-if="showPlot" :chart-data="prepareDataset(endHours, selectedVar)"></LineChart>
+            <h4>{{ $t('plot for') }} {{ $t( allCityData[selectedCity].name.toLowerCase() ) }}</h4>
+            <LineChart :chart-data="prepareDataset(endHours, selectedVar)"></LineChart>
         </b-container>
 </div>
 </template>
@@ -50,9 +51,10 @@
     import {LIcon} from 'vue2-leaflet'
     import 'leaflet/dist/leaflet.css'
     import BackendApiHandler from '../utils/BackendApiHandler.js'
-    import Controls from './Controls.vue';
-    import Modal from './Modal.vue';
-    import LineChart from './LineChart.vue';
+    import Controls from './Controls.vue'
+    import Modal from './Modal.vue'
+    import LineChart from './LineChart.vue'
+    import { ElToEnCityName } from '../lang/cityName' // used to translate greek city names to english
 
     export default {
       name: 'Forecasts',
@@ -61,7 +63,6 @@
           infoModalId: "infoModal1",
           selectedVar: 'temperature',
           allCityData: [],
-          showPlot: true,
           selectedCity: 0,
           endHours: 48
         }
@@ -94,9 +95,16 @@
               })
           },
           toggleShowPlot (event, cityName) {
+          /* load plot for cityName */
               event.preventDefault();
-              this.selectedCity = this.allCityData.findIndex(city => city.name === cityName);
-              //this.showPlot = !this.showPlot;
+
+              // translate city name back to English, otherwise no match (because allCityData does not get translated!)
+              if (this.$i18n.locale === 'el') {
+                  this.selectedCity = this.allCityData.findIndex(city => city.name === ElToEnCityName(cityName));
+              }
+              else {
+                this.selectedCity = this.allCityData.findIndex(city => city.name === cityName);
+              }
           },
           prepareDataset: function (endHours, variable) {
           /* prepares dataset for plot */
@@ -111,17 +119,22 @@
               })
 
               return {
-                  variable: variable, // pass selected variable with data
+                  variable: this.$t(variable), // pass selected variable with data
                   labels: labels,
                   datasets: [
                       {
                           fill: false,
                           tension: 0,
-                          borderColor: "#80b6f4",
+                          borderColor: "#80b6f4", // if more than one datasets. color should be set randomly or left to chart.js to decide
+                          label: this.allCityData[this.selectedCity].name,
                           data: data
                       }
                   ]
               }
+        },
+        translateTableKey() { // to overcome dynamic argument expression constraints (https://vuejs.org/v2/guide/syntax.html#Dynamic-Argument-Expression-Constraints)
+            // tried with argument too, it works but we get a warning
+            return `cell(${this.$t('city')})`
         }
     },
     computed: {
@@ -129,7 +142,7 @@
             let data_for_table = [];
             this.allCityData.forEach(city => {
                 var curr_data = {
-                    "City" : city.name
+                    [this.$t('city')] : this.$t(city.name.toLowerCase()) // translate key according to locale
                 }
                 for (var counter=0;counter<8;counter++)
                 {
@@ -148,9 +161,9 @@
         forecast_fields: function () {
             var currentDate = new Date();
             var options = { weekday: 'short', hour: '2-digit'};
-            var fields= [
+            var fields = [
               {
-                key: 'City',
+                key: this.$t('city'), // key name according to locale
                 sortable: true
               }
             ];
@@ -160,7 +173,9 @@
                 var new_label = {
                   key: String(counter+1),
                   sortable: false,
-                  label: currentDate.toLocaleDateString("en-US",options)
+                  label: this.$i18n.locale === 'en' // dates according to locale
+                    ? currentDate.toLocaleDateString("en-US",options)
+                    : currentDate.toLocaleDateString("el-GR",options)
                 }
                 fields.push(new_label);
             }
@@ -172,17 +187,17 @@
                 "pressure" : "hPa",
                 "humidity" : "%",
             };
-            return this.selectedVar+" in "+unit_map[this.selectedVar];
+            return `${this.$t(this.selectedVar)} ${this.$t('in')} ${unit_map[this.selectedVar]}`
         }
     },
     created() {
-      console.log('Load our data first');
-      if (process.env.NODE_ENV === 'development') {
-        this.allCityData = data;
-      }
-      else {
-        this.initDataOnTable();
-      }
+        console.log('Load our data first');
+        if (process.env.NODE_ENV === 'development') {
+            this.allCityData = data;
+        }
+        else {
+            this.initDataOnTable();
+        }
     },
   }
 </script>

@@ -25,12 +25,21 @@
 
   "reset": "reset",
 
-  "map date": "Map date",
-  "map prompt": "City weather conditions. Select a city to view more",
-  "forecast prompt": "Choose one of the variables to view detailed forecast",
+  "in": "in",
+
+  "plot for": "Plot for",
+
+  "city": "City",
+
   "mediterannea": "Mediterrannea",
   "greece": "Greece",
   "patras": "Patras",
+  "athens": "Athens",
+  "thessaloniki": "Thessaloniki",
+
+  "map date": "Map date",
+  "map prompt": "City weather conditions. Select a city to view more",
+  "forecast prompt": "Choose one of the variables to view detailed forecast",
   "options": "Options",
   "variable": "Variable",
   "rainfall": "Rainfall",

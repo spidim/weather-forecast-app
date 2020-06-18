@@ -16,9 +16,9 @@ export default { //We are extending the base chart class as mentioned above
                                 display: true,
                                 labelString: this.chartData.variable
                             },
-                            ticks: {
-                                beginAtZero: true,
-                                stepSize: 1
+                            ticks: { // better left to be calculated automatically
+                                //beginAtZero: true,
+                                //stepSize: (Math.max(...this.chartData.datasets.data) - Math.min(...this.chartData.datasets.data))/100
                             },
                             gridLines: {
                                 display: true
@@ -63,9 +63,9 @@ export default { //We are extending the base chart class as mentioned above
 
     watch: {
         chartData () { // options are not reactive, so we use a watcher
-            let oldOpt = { ...this.options }
-            oldOpt.scales.yAxes[0].scaleLabel.labelString = this.chartData.variable // update y-axis variable label
-            this.renderChart(this.chartData, oldOpt) // render anew
+            let newOptions = { ...this.options }
+            newOptions.scales.yAxes[0].scaleLabel.labelString = this.chartData.variable // update y-axis variable label
+            this.renderChart(this.chartData, newOptions) // render anew
         }
     },
 
