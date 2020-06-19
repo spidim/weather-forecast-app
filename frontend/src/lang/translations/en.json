@@ -36,6 +36,13 @@
   "patras": "Patras",
   "athens": "Athens",
   "thessaloniki": "Thessaloniki",
+  "kavala": "Kavala",
+  "alexandroupolis": "Alexandroupolis",
+  "ioannina": "Ioannina",
+  "larissa": "Larissa",
+  "kalamata": "Kalamata",
+  "chania": "Chania",
+  "rodos": "Rodos",
 
   "map date": "Map date",
   "map prompt": "City weather conditions. Select a city to view more",

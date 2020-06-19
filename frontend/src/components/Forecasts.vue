@@ -29,14 +29,27 @@
             </b-row>
             <b-row md="12" class="mt-4">
                 <b-col class="">
-                    <b-table striped hover borderless
+                    <b-table striped hover borderless sticky-header
+                        style="height: 200px"
                         small head-variant="light"
                         :items="forecast_items"
                         :fields="forecast_fields"
                     >
                         <template v-slot:[translateTableKey()]="data">
                             <!-- click city name to load plot -->
-                            <a href="" v-on:click="toggleShowPlot($event, data.value)">{{ data.value }}</a>
+                            <a href=""
+                                v-on:click="toggleShowPlot($event, data.value)"
+                            >
+                                <!-- make selected city name bold, else regular -->
+                                <strong v-if="data.value === allCityData[selectedCity].name ||
+                                          ElToEnCityName(data.value) === allCityData[selectedCity].name"
+                                >
+                                    {{ data.value }}
+                                </strong>
+                                <span v-else>
+                                    {{ data.value }}
+                                </span>
+                            </a>
                         </template>
                         
                     </b-table>
@@ -60,6 +73,11 @@
 
     export default {
       name: 'Forecasts',
+      mixins: [
+          {
+              methods: { ElToEnCityName }
+          }
+      ],
       data() {
           return {
               infoModalId: "infoModal1",
@@ -102,7 +120,7 @@
 
               // translate city name back to English, otherwise no match (because allCityData does not get translated!)
               if (this.$i18n.locale === 'el') {
-                  this.selectedCity = this.allCityData.findIndex(city => city.name === ElToEnCityName(cityName));
+                  this.selectedCity = this.allCityData.findIndex(city => city.name === this.ElToEnCityName(cityName));
               }
               else {
                 this.selectedCity = this.allCityData.findIndex(city => city.name === cityName);
@@ -122,7 +140,7 @@
               })
 
               return {
-                  locale: this.$i18n.locale === 'en' ? 'en-US' : 'el-GR',
+                  locale: this.$i18n.locale,
                   variable: this.$t(variable), // pass selected variable name
                   labels: labels,
                   datasets: [
@@ -130,7 +148,9 @@
                           fill: false,
                           tension: 0,
                           borderColor: "#80b6f4", // if more than one datasets, color should be set randomly or left to chart.js to decide
-                          label: this.allCityData[this.selectedCity].name,
+                          label: this.$i18n.locale === 'el' // translate city name on label
+                              ? this.$t(this.allCityData[this.selectedCity].name.toLowerCase())
+                              : this.allCityData[this.selectedCity].name,
                           data: data
                       }
                   ]
@@ -163,7 +183,7 @@
             return data_for_table;
         },
         forecast_fields: function () {
-            var currentDate = new Date();
+            var currentDate = new Date(); // correct if we have fresh data, otherwise we should read start date from allCityData
             var options = { weekday: 'short', hour: '2-digit'};
             var fields = [
               {
@@ -205,3 +225,7 @@
     },
   }
 </script>
+
+<style>
+
+</style>
