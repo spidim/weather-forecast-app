@@ -21,7 +21,7 @@
        </b-dropdown>
        <b-button-group class="mx-1">
            <!--<b-button @click="$emit('show-info-modal')" size="sm">{{$t('info')}}</b-button>-->
-           <b-button v-b-modal="infoModalId" size="sm">{{$t('info')}}</b-button>
+           <b-button v-b-modal="infoModalId" size="md">{{$t('info')}}</b-button>
        </b-button-group>
     </b-button-toolbar>
 

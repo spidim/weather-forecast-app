@@ -1,8 +1,10 @@
 <script>
 import { Line, mixins } from 'vue-chartjs' // We specify what type of chart we want from vue-chartjs and the mixins module
 const { reactiveProp } = mixins
+import moment from 'moment'
+import elLocale from 'moment/locale/el'
 
-export default { //We are extending the base chart class as mentioned above
+export default {
     extends: Line,
     mixins: [reactiveProp],
 
@@ -18,7 +20,7 @@ export default { //We are extending the base chart class as mentioned above
                             },
                             ticks: { // better left to be calculated automatically
                                 //beginAtZero: true,
-                                //stepSize: (Math.max(...this.chartData.datasets.data) - Math.min(...this.chartData.datasets.data))/100
+                                //stepSize: 1
                             },
                             gridLines: {
                                 display: true
@@ -41,7 +43,11 @@ export default { //We are extending the base chart class as mentioned above
                       { // date axis
                           type: 'time',
                           time: {
-                              unit: 'day'
+                              unit: 'day',
+                              parser: dt => { // change date locale
+                                  moment.locale(this.chartData.locale)
+                                  return dt
+                              }
                           },
                           ticks: {
                               fontStyle: 'bold'

@@ -14,11 +14,13 @@
           {{$t('forecast prompt')}}
         </b-alert>
         <b-container>
+            <br/>
             <b-row>
                 <b-col xl="12">
                     <Controls
                         v-on:selected_var="selectedVar = $event;"
-                        :infoModalId="infoModalId"/>
+                        :infoModalId="infoModalId"
+                    />
                     <Modal :modalId="infoModalId" :text="$t('info prompt')"/>
                 </b-col>
             </b-row>
@@ -59,13 +61,13 @@
     export default {
       name: 'Forecasts',
       data() {
-        return {
-          infoModalId: "infoModal1",
-          selectedVar: 'temperature',
-          allCityData: [],
-          selectedCity: 0,
-          endHours: 48
-        }
+          return {
+              infoModalId: "infoModal1",
+              selectedVar: 'temperature',
+              allCityData: [],
+              selectedCity: 0, // index of city in allCityData
+              endHours: 48 // timeline duration in hours for plot
+          }
       },
       components: {
           Controls,
@@ -113,19 +115,21 @@
 
               this.allCityData[this.selectedCity].hourly.filter((entry, index) => {
                   if (index < endHours) { // pick time and selected variable measurements
-                      labels.push(new Date(entry.dt*1000))
+                      //labels.push(new Date(entry.dt*1000))
+                      labels.push(entry.dt*1000)
                       data.push(entry[variable])
                   }
               })
 
               return {
-                  variable: this.$t(variable), // pass selected variable with data
+                  locale: this.$i18n.locale === 'en' ? 'en-US' : 'el-GR',
+                  variable: this.$t(variable), // pass selected variable name
                   labels: labels,
                   datasets: [
                       {
                           fill: false,
                           tension: 0,
-                          borderColor: "#80b6f4", // if more than one datasets. color should be set randomly or left to chart.js to decide
+                          borderColor: "#80b6f4", // if more than one datasets, color should be set randomly or left to chart.js to decide
                           label: this.allCityData[this.selectedCity].name,
                           data: data
                       }
@@ -133,7 +137,7 @@
               }
         },
         translateTableKey() { // to overcome dynamic argument expression constraints (https://vuejs.org/v2/guide/syntax.html#Dynamic-Argument-Expression-Constraints)
-            // tried with argument too, it works but we get a warning
+            // tried passing an argument to the function too, it works but we get a warning
             return `cell(${this.$t('city')})`
         }
     },
@@ -183,7 +187,7 @@
         },
         getTableTitle: function () {
             let unit_map = {
-                "temperature" : "C",
+                "temperature" : "\u2103",
                 "pressure" : "hPa",
                 "humidity" : "%",
             };

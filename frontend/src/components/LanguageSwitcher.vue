@@ -34,20 +34,26 @@ export default {
     },
 
     methods: {
-    switchLocale: function(locale) {
-        /* switches locale */
-        this.$i18n.locale = locale;
+        switchLocale: function(locale) {
+            /* switches locale */
+            this.$i18n.locale = locale;
+            window.localStorage.setItem('locale', locale); // update key
+        },
+
+        getActiveLanguage: function() {
+            /* return language name of the active locale */
+            return this.locales.find(l => {return l.locale === this.$i18n.locale}).language;
+        },
+
+        getActiveLocale: function() {
+            /* return active locale */
+            return this.$i18n.locale;
+        }
     },
 
-    getActiveLanguage: function() {
-        /* return language name of the active locale */
-        return this.locales.find(l => {return l.locale === this.$i18n.locale}).language;
-    },
-
-    getActiveLocale: function() {
-        /* return active locale */
-        return this.$i18n.locale;
+    created () {
+        if (window.localStorage.getItem('locale')) // if key is set, otherwise defaults to en
+            this.$i18n.locale = window.localStorage.getItem('locale');
     }
-      }
 }
 </script>
