@@ -9,8 +9,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . /usr/src/app
 
-ENV OW_USER_TOKEN
-
 EXPOSE 8080
 
 ENTRYPOINT ["python3"]
