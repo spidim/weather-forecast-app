@@ -29,17 +29,18 @@
             </b-row>
             <b-row md="12" class="mt-4">
                 <b-col class="">
-                    <b-table striped hover borderless sticky-header
+                    <!-- table renders only if allCityData is populated -->
+                    <b-table v-if="allCityData && allCityData.length"
+                        striped hover borderless sticky-header
                         style="height: 200px"
                         small head-variant="light"
                         :items="forecast_items"
                         :fields="forecast_fields"
                     >
-                        <template v-slot:[translateTableKey()]="data">
+                        <!-- if selectedCity is set to an entry in allCityData -->
+                        <template v-if="selectedCity !== -1" v-slot:[translateTableKey()]="data">
                             <!-- click city name to load plot -->
-                            <a href=""
-                                v-on:click="toggleShowPlot($event, data.value)"
-                            >
+                            <a href="" v-on:click="toggleShowPlot($event, data.value)">
                                 <!-- make selected city name bold, else regular -->
                                 <strong v-if="data.value === allCityData[selectedCity].name ||
                                           ElToEnCityName(data.value) === allCityData[selectedCity].name"
@@ -51,12 +52,25 @@
                                 </span>
                             </a>
                         </template>
+                        <!-- otherwise render city name without formatting -->
+                        <template v-else v-slot:[translateTableKey()]="data">
+                            <!-- click city name to load plot -->
+                            <a href="" v-on:click="toggleShowPlot($event, data.value)">
+                                {{ data.value }}
+                            </a>
+                        </template>
                         
                     </b-table>
+                    <h3 v-else>{{ $t('no forecasts') }}</h3>
                 </b-col>
             </b-row>
-            <h4>{{ $t('plot for') }} {{ $t( allCityData[selectedCity].name.toLowerCase() ) }}</h4>
-            <LineChart :chart-data="prepareDataset(endHours, selectedVar)"></LineChart>
+            <div v-if="allCityData && allCityData.length && selectedCity !== -1">
+                <h4>
+                    {{ $t('plot for') }} {{ $t( allCityData[selectedCity].name.toLowerCase() ) }}
+                    <b-button-close @click="selectedCity = -1"></b-button-close>
+                </h4>
+                <LineChart :chart-data="prepareDataset(endHours, selectedVar)"></LineChart>
+            </div>
         </b-container>
 </div>
 </template>
@@ -83,7 +97,7 @@
               infoModalId: "infoModal1",
               selectedVar: 'temperature',
               allCityData: [],
-              selectedCity: 0, // index of city in allCityData
+              selectedCity: -1, // index of city in allCityData
               endHours: 48 // timeline duration in hours for plot
           }
       },
@@ -128,32 +142,36 @@
           },
           prepareDataset: function (endHours, variable) {
           /* prepares dataset for plot */
-              let labels = []
-              let data = []
+              if (this.allCityData && this.allCityData.length) {
+                  let labels = []
+                  let data = []
 
-              this.allCityData[this.selectedCity].hourly.filter((entry, index) => {
-                  if (index < endHours) { // pick time and selected variable measurements
-                      //labels.push(new Date(entry.dt*1000))
-                      labels.push(entry.dt*1000)
-                      data.push(entry[variable])
-                  }
-              })
-
-              return {
-                  locale: this.$i18n.locale,
-                  variable: this.$t(variable), // pass selected variable name
-                  labels: labels,
-                  datasets: [
-                      {
-                          fill: false,
-                          tension: 0,
-                          borderColor: "#80b6f4", // if more than one datasets, color should be set randomly or left to chart.js to decide
-                          label: this.$i18n.locale === 'el' // translate city name on label
-                              ? this.$t(this.allCityData[this.selectedCity].name.toLowerCase())
-                              : this.allCityData[this.selectedCity].name,
-                          data: data
+                  this.allCityData[this.selectedCity].hourly.filter((entry, index) => {
+                      if (index < endHours) { // pick time and selected variable measurements
+                          labels.push(entry.dt*1000)
+                          data.push(entry[variable])
                       }
-                  ]
+                  })
+
+                  return {
+                      locale: this.$i18n.locale,
+                      variable: this.$t(variable), // pass selected variable name
+                      labels: labels,
+                      datasets: [
+                          {
+                              fill: false,
+                              tension: 0,
+                              borderColor: "#80b6f4", // if more than one datasets, color should be set randomly or left to chart.js to decide
+                              label: this.$i18n.locale === 'el' // translate city name on label
+                                  ? this.$t(this.allCityData[this.selectedCity].name.toLowerCase())
+                                  : this.allCityData[this.selectedCity].name,
+                              data: data
+                          }
+                      ]
+                  }
+              }
+              else {
+                  return {}
               }
         },
         translateTableKey() { // to overcome dynamic argument expression constraints (https://vuejs.org/v2/guide/syntax.html#Dynamic-Argument-Expression-Constraints)
