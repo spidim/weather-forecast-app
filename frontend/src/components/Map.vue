@@ -36,9 +36,9 @@
                         :lat-lng="[city.coords.lat,city.coords.lon]"
                         :icon="l_icon(city.currWeatherIconId)">
                         <l-popup :options="{'maxWidth': 'auto'}">
-                            <PopupViewAlt :forecast="city.forecastInfo"
+                            <PopupView :forecast="city.forecastInfo"
                                 :name="city.name">
-                            </PopupViewAlt>
+                            </PopupView>
                         </l-popup>
                     </l-marker>
                 </l-map>
@@ -100,8 +100,9 @@
 import {LMap, LTileLayer, LMarker, LIcon, LPopup} from 'vue2-leaflet'
 import { Icon }  from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import PopupViewAlt from './PopupViewAlt.vue'
+import PopupView from './PopupView.vue'
 import BackendApiHandler from '../utils/BackendApiHandler.js'
+import data from '../../data2.json' // saved api responses [remove this import, only for development!!!]
 
 // this part resolve an issue where the markers would not appear
 delete Icon.Default.prototype._getIconUrl;
@@ -119,7 +120,7 @@ export default {
         LMarker,
         LIcon,
         LPopup,
-        PopupViewAlt
+        PopupView
     },
     data () {
         return {
@@ -163,7 +164,12 @@ export default {
   },
   created() {
     console.log('Load our data first');
-    this.initDataOnMap();
+    if (process.env.NODE_ENV === 'development') {
+        this.allCityData = data;
+    }
+    else {
+        this.initDataOnMap();
+    }
   },
   computed: {
     centerSimple() {

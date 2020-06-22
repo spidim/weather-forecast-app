@@ -1,19 +1,10 @@
-<!--
-  Copyright (c) 2019
-
-  Pop-up view
-
-  @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
-  @version 1.0
- -->
-
 <template>
 <div class="popup">
     <b-card no-body>
         <b-tabs pills>
-            <b-tab no-body v-for="(forecastValue, forecastName, index) in forecast_vars" :title="$t(forecastName) :key="index">
-                <b-container style="overflow: auto;">
-                    <b-row>
+        	<b-tab no-body v-for="({ variable, hourlyGraphUrl }, index) in forecastVariables" :title="$t(variable)" :key="index">
+        		<b-container style="overflow: auto;">
+        			<b-row>
                         <b-button-group size="sm" style="z-index: 1; position: fixed; top: 55px; left: 30px;" class="smooth slow"
                             v-bind:style="{opacity: showbuttons}"
                             @mouseenter="showbuttons = 1;"
@@ -28,7 +19,7 @@
                                 @wheel.prevent="$emit('wheel', $event, index)"
                             >
                                 <b-card no-body class="border-0" v-bind:style="{cursor: dragging ? 'grab' : 'auto'}"
-                                    :img-src="getImageUrl(forecastValue.hourlyGraphUrl)"
+                                    :img-src="getImageUrl(hourlyGraphUrl)"
                                     @dragstart.prevent
                                     v-on:mousedown = "dragStart($event)"
                                     v-on:mouseup = "dragStop($event)"
@@ -43,8 +34,8 @@
                         <b-col md="6" align="center">{{ name }}</b-col>
                         <b-col md="3"/>
                     </b-row>
-                </b-container>
-            </b-tab>
+        		</b-container>
+        	</b-tab>
         </b-tabs>
     </b-card>
 </div>
@@ -59,8 +50,8 @@ export default {
         return {
             zoomscale: [1.0, 1.0, 1.0], /* zoom scale for each tab container */
             dragcoord: [0, 0, 0, 0], /* start and end coordinations for dragging */
-            dragging: false /* dragging state */,
-            showbuttons: 0 /* zoom buttons opacity */
+            dragging: false, /* dragging state */
+            showbuttons: 0, /* zoom buttons opacity */
         }
     },
 
@@ -104,7 +95,7 @@ export default {
         },
         getImageUrl(forecastV) {
             if (forecastV && forecastV !== "")
-                return forecastV;
+                return require(`../assets/${forecastV}`);
             else
                 return require("../assets/no_data_plot.jpeg");
 
@@ -112,10 +103,16 @@ export default {
     },
     computed:
     {
-        forecast_vars: function() {
+        forecastVariables: function() {
             let data_new = JSON.parse(JSON.stringify(this.forecast));
             delete data_new.overall;
-            return data_new;
+            //return data_new;
+            return Object.keys(data_new).map(variable => { // convert props object to array of objects
+                return {
+                    variable: variable,
+                    hourlyGraphUrl: this.forecast[variable].hourly_graph_url
+                }
+            });
         }
     },
     mounted() {

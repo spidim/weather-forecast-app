@@ -28,8 +28,8 @@ const config = {
         use: [{
           loader: 'vue-loader',
           options: {
-		    loaders: {
-			}
+		        loaders: {
+			      }
           }
         }]
       },
