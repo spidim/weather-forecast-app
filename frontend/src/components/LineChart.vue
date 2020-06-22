@@ -18,10 +18,10 @@ export default {
                                 display: true,
                                 labelString: this.chartData.variable
                             },
-                            ticks: { // better left to be calculated automatically
+                            /*ticks: { // better left to be calculated automatically
                                 //beginAtZero: true,
                                 //stepSize: 1
-                            },
+                            },*/
                             gridLines: {
                                 display: true
                             }

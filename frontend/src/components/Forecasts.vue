@@ -11,7 +11,7 @@
 <template>
     <div>
         <b-alert show variant="dark" dismissible>
-          {{$t('forecast prompt')}}
+          {{ $t('forecast prompt') }}
         </b-alert>
         <b-container>
             <br/>
@@ -32,7 +32,7 @@
                     <!-- table renders only if allCityData is populated -->
                     <b-table v-if="allCityData && allCityData.length"
                         striped hover borderless sticky-header
-                        style="height: 200px"
+                        :style="{height: (selectedCity !== -1 ? '25vh' : '70vh')}"
                         small head-variant="light"
                         :items="forecast_items"
                         :fields="forecast_fields"
@@ -64,26 +64,36 @@
                     <h3 v-else>{{ $t('no forecasts') }}</h3>
                 </b-col>
             </b-row>
-            <div v-if="allCityData && allCityData.length && selectedCity !== -1">
-                <h4>
-                    {{ $t('plot for') }} {{ $t( allCityData[selectedCity].name.toLowerCase() ) }}
-                    <b-button-close @click="selectedCity = -1"></b-button-close>
-                </h4>
+            <b-container v-if="allCityData && allCityData.length && selectedCity !== -1">
+                <b-row class="text-center">
+                  <b-col>
+                      <b-form-spinbutton id="endHours" v-model="endHours" min="1" max="48" size="sm" inline></b-form-spinbutton>
+                      <span>{{ $t('hours') }}</span>
+                  </b-col>
+                  <b-col cols="8">
+                      <h4>
+                        {{ $t('plot for') }} {{ $t( allCityData[selectedCity].name.toLowerCase() ) }}
+                    </h4>
+                  </b-col>
+                  <b-col>
+                      <b-button-close @click="selectedCity = -1"></b-button-close>
+                  </b-col>
+                </b-row>
                 <LineChart :chart-data="prepareDataset(endHours, selectedVar)"></LineChart>
-            </div>
+            </b-container>
         </b-container>
 </div>
 </template>
 
 <script>
-    import data from '../../data.json' // saved api responses [remove this import, only for development!!!]
+    import data from '../../data2.json' // saved api responses [remove this import, only for development!!!]
     import {LIcon} from 'vue2-leaflet'
     import 'leaflet/dist/leaflet.css'
     import BackendApiHandler from '../utils/BackendApiHandler.js'
     import Controls from './Controls.vue'
     import Modal from './Modal.vue'
     import LineChart from './LineChart.vue'
-    import { ElToEnCityName } from '../lang/cityName' // used to translate greek city names to english
+    import { ElToEnCityName } from '../lang/cityName' // used to translate greek city names back to english
 
     export default {
       name: 'Forecasts',
@@ -132,24 +142,26 @@
           /* load plot for cityName */
               event.preventDefault();
 
-              // translate city name back to English, otherwise no match (because allCityData does not get translated!)
-              if (this.$i18n.locale === 'el') {
-                  this.selectedCity = this.allCityData.findIndex(city => city.name === this.ElToEnCityName(cityName));
-              }
-              else {
-                this.selectedCity = this.allCityData.findIndex(city => city.name === cityName);
-              }
+              this.selectedCity = this.allCityData.findIndex(city =>
+                  (
+                      city.name === (this.$i18n.locale === 'el'
+                          ? this.ElToEnCityName(cityName) // translate city name back to English, otherwise no match (because allCityData does not get translated!)
+                          : cityName
+                      )
+                  )
+              )
           },
           prepareDataset: function (endHours, variable) {
           /* prepares dataset for plot */
               if (this.allCityData && this.allCityData.length) {
-                  let labels = []
-                  let data = []
+                  let labels = [];
+                  let data = [];
+                  let dt = Date.now();
 
-                  this.allCityData[this.selectedCity].hourly.filter((entry, index) => {
-                      if (index < endHours) { // pick time and selected variable measurements
-                          labels.push(entry.dt*1000)
-                          data.push(entry[variable])
+                  this.allCityData[this.selectedCity].forecastInfo[variable].hourlyForecast.filter((entry, index) => {
+                      if (index < endHours) { // pick datetime and selected variable measurements
+                          labels.push(dt + (index*3600000)); // where to get dt from?
+                          data.push(entry);
                       }
                   })
 
@@ -175,8 +187,8 @@
               }
         },
         translateTableKey() { // to overcome dynamic argument expression constraints (https://vuejs.org/v2/guide/syntax.html#Dynamic-Argument-Expression-Constraints)
-            // tried passing an argument to the function too, it works but we get a warning
-            return `cell(${this.$t('city')})`
+            // tried passing an argument to the function too, it works but gives a warning
+            return `cell(${this.$t('city')})`;
         }
     },
     computed: {
@@ -188,13 +200,8 @@
                 }
                 for (var counter=0;counter<8;counter++)
                 {
-                    if (process.env.NODE_ENV === 'development') {
-                        curr_data[String(counter)] = city.hourly[counter*6][this.selectedVar];
-                    }
-                    else {
-                      curr_data[String(counter)] =
-                          city.forecastInfo[this.selectedVar].hourlyForecast[counter*6];
-                    }
+                    curr_data[String(counter)] =
+                        city.forecastInfo[this.selectedVar].hourlyForecast[counter*6];
                 }
                 data_for_table.push(curr_data);
             });
@@ -229,7 +236,7 @@
                 "pressure" : "hPa",
                 "humidity" : "%",
             };
-            return `${this.$t(this.selectedVar)} ${this.$t('in')} ${unit_map[this.selectedVar]}`
+            return `${this.$t(this.selectedVar)} ${this.$t('in')} ${unit_map[this.selectedVar]}`;
         }
     },
     created() {
@@ -243,7 +250,3 @@
     },
   }
 </script>
-
-<style>
-
-</style>
