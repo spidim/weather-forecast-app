@@ -32,12 +32,16 @@
 
                     <l-tile-layer :url="mapUrl"></l-tile-layer>
                     
-                    <l-marker v-for="city in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
+                    <l-marker v-for="(city, index) in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
                         :lat-lng="[city.coords.lat,city.coords.lon]"
-                        :icon="l_icon(city.currWeatherIconId)">
+                        :icon="l_icon(city.currWeatherIconId)"
+                        @popupclose="resetZoom(city.name)"
+                    >
                         <l-popup :options="{'maxWidth': 'auto'}">
                             <PopupView :forecast="city.forecastInfo"
-                                :name="city.name">
+                                :name="city.name"
+                                :ref="city.name"
+                            >
                             </PopupView>
                         </l-popup>
                     </l-marker>
@@ -128,7 +132,7 @@ export default {
           zoom: 6,
           center: {lat: 38.436111, lng: 26.112442},
           bounds: null,
-          allCityData: [],
+          allCityData: []
         };
     },
     methods: {
@@ -161,6 +165,9 @@ export default {
             iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
         })
     },
+    resetZoom(cityName) {
+        this.$refs[cityName][0].reset([0, 1, 2]);
+    }
   },
   created() {
     console.log('Load our data first');
@@ -170,6 +177,8 @@ export default {
     else {
         this.initDataOnMap();
     }
+
+    this.refer = this.allCityData.map(city => city.name);
   },
   computed: {
     centerSimple() {

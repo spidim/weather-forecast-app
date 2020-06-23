@@ -31,7 +31,7 @@
                     </b-row>
                     <b-row>
                         <b-col md="3"/>
-                        <b-col md="6" align="center">{{ name }}</b-col>
+                        <b-col md="6" align="center">{{ $t(name.toLowerCase()) }}</b-col>
                         <b-col md="3"/>
                     </b-row>
         		</b-container>
@@ -93,6 +93,7 @@ export default {
             if(event.which == 1)
                 this.dragging = false;
         },
+        
         getImageUrl(forecastV) {
             if (forecastV && forecastV !== "")
                 return require(`../assets/${forecastV}`);

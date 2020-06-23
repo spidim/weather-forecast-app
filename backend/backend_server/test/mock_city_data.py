@@ -33,7 +33,7 @@ city_list = [
     },
     {
         "id": 2,
-        "name": "Patra",
+        "name": "Patras",
         "coords": {
                     "lat": 38.246639,
                     "lon": 21.734573
