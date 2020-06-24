@@ -67,7 +67,8 @@
             <b-container v-if="allCityData && allCityData.length && selectedCity !== -1">
                 <b-row class="text-center">
                   <b-col>
-                      <b-form-spinbutton id="endHours" v-model="endHours" min="1" max="48" size="sm" inline></b-form-spinbutton>
+                      <b-form-spinbutton id="endHours" :value="endHours" min="1" max="48" size="sm" inline @change="endHours = $event">
+                      </b-form-spinbutton>
                       <span>{{ $t('hours') }}</span>
                   </b-col>
                   <b-col cols="8">
