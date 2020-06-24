@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+ARG OW_USER_TOKEN
+RUN echo "OW_USER_TOKEN='$OW_USER_TOKEN'">> .env
 RUN npm run build
 
 # production stage

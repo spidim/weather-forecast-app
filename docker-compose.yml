@@ -2,7 +2,10 @@ version: '3.3'
 services:
   weather-frontend:
     image: weather-app/frontend
-    build: ./frontend
+    build:
+        context: ./frontend
+        args:
+            OW_USER_TOKEN: ${OW_USER_TOKEN}
     environment:
         - OW_USER_TOKEN=${OW_USER_TOKEN}
     ports:
