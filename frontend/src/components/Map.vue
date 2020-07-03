@@ -22,7 +22,7 @@
             </b-col>
             <b-col cols=10>
                 <l-map
-                    :options="{attributionControl: false}"
+                    :options="{attributionControl: false, preferCanvas: true}"
                     style="height: 80vh; width: 100%; margin-left: auto; margin-right: auto;"
                     :zoom="zoom"
                     :center="center"
@@ -31,18 +31,23 @@
                     @update:bounds="boundsUpdated">
 
                     <l-tile-layer :url="mapUrl"></l-tile-layer>
+
+                    <l-control-attribution
+                        position="bottomright"
+                        prefix="<a href='https://www.openstreetmap.org/copyright'>© OpenStreetMap contributors</a>"
+                    ></l-control-attribution>
                     
                     <l-marker v-for="(city, index) in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
                         :lat-lng="[city.coords.lat,city.coords.lon]"
                         :icon="l_icon(city.currWeatherIconId)"
-                        @popupclose="resetZoom(city.name)"
                     >
                         <l-popup :options="{'maxWidth': 'auto'}">
-                            <PopupView :forecast="city.forecastInfo"
+                            <PopupViewChart
                                 :name="city.name"
                                 :ref="city.name"
+                                :cityData="allCityData[index]"
                             >
-                            </PopupView>
+                            </PopupViewChart>
                         </l-popup>
                     </l-marker>
                 </l-map>
@@ -101,10 +106,11 @@
 </template>
 
 <script>
-import {LMap, LTileLayer, LMarker, LIcon, LPopup} from 'vue2-leaflet'
+import {LMap, LTileLayer, LMarker, LIcon, LPopup, LControlAttribution} from 'vue2-leaflet'
 import { Icon }  from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import PopupView from './PopupView.vue'
+//import PopupView from './PopupView.vue'
+import PopupViewChart from './PopupViewChart.vue'
 import BackendApiHandler from '../utils/BackendApiHandler.js'
 import data from '../../data2.json' // saved api responses [remove this import, only for development!!!]
 
@@ -124,7 +130,9 @@ export default {
         LMarker,
         LIcon,
         LPopup,
-        PopupView
+        LControlAttribution,
+        //PopupView,
+        PopupViewChart
     },
     data () {
         return {
@@ -165,9 +173,9 @@ export default {
             iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
         })
     },
-    resetZoom(cityName) {
+    /*resetZoom(cityName) {
         this.$refs[cityName][0].reset([0, 1, 2]);
-    }
+    }*/
   },
   created() {
     console.log('Load our data first');
