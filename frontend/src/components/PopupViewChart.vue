@@ -54,7 +54,7 @@ export default {
                 let data = [];
                 let dt = Date.now();
 
-                this.cityData.forecastInfo[variable].filter((entry, index) => {
+                this.cityData.forecastInfo[variable].hourlyForecast.filter((entry, index) => {
                     if (index < endHours) { // pick datetime and selected variable measurements
                         labels.push(dt + (index*3600000)); // where to get dt from?
                         data.push(entry);
