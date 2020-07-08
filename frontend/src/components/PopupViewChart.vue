@@ -86,7 +86,9 @@ export default {
     computed:
     {
         forecastVariables: function() {
-            return Object.keys(this.cityData.forecastInfo)
+            let variables = this.cityData.forecastInfo
+            delete variables.overall
+            return Object.keys(variables)
         }
     },
     created() {
