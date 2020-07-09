@@ -40,12 +40,13 @@
                     <l-marker v-for="(city, index) in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
                         :lat-lng="[city.coords.lat,city.coords.lon]"
                         :icon="l_icon(city.currWeatherIconId)"
+                        @popupclose="activeCityPopup = ''"
+                        @popupopen="activeCityPopup = city"
                     >
                         <l-popup :options="{'maxWidth': 'auto'}">
                             <PopupViewChart
-                                :name="city.name"
-                                :ref="city.name"
                                 :cityData="allCityData[index]"
+                                :active="activeCityPopup === city"
                             >
                             </PopupViewChart>
                         </l-popup>
@@ -106,13 +107,13 @@
 </template>
 
 <script>
+import data from '../../response.json'
 import {LMap, LTileLayer, LMarker, LIcon, LPopup, LControlAttribution} from 'vue2-leaflet'
 import { Icon }  from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 //import PopupView from './PopupView.vue'
 import PopupViewChart from './PopupViewChart.vue'
 import BackendApiHandler from '../utils/BackendApiHandler.js'
-import data from '../../data2.json' // saved api responses [remove this import, only for development!!!]
 
 // this part resolve an issue where the markers would not appear
 delete Icon.Default.prototype._getIconUrl;
@@ -140,7 +141,8 @@ export default {
           zoom: 6,
           center: {lat: 38.436111, lng: 26.112442},
           bounds: null,
-          allCityData: []
+          allCityData: [],
+          activeCityPopup: ''
         };
     },
     methods: {
@@ -186,7 +188,7 @@ export default {
         this.initDataOnMap();
     }
 
-    this.refer = this.allCityData.map(city => city.name);
+    //this.refer = this.allCityData.map(city => city.name);
   },
   computed: {
     centerSimple() {

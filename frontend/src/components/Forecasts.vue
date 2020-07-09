@@ -87,7 +87,7 @@
 </template>
 
 <script>
-    import data from '../../data2.json' // saved api responses [remove this import, only for development!!!]
+    import data from '../../response.json' // saved api responses [remove this import, only for development!!!]
     import {LIcon} from 'vue2-leaflet'
     import 'leaflet/dist/leaflet.css'
     import BackendApiHandler from '../utils/BackendApiHandler.js'

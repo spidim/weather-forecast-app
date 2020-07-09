@@ -10,6 +10,7 @@
                             align="center" style="height: 275px; width: 275px; overflow: auto;"
                         >
                             <LineChart
+                                v-if="active"
                                 :styles="{height: '100%', width: '100%'}"
                                 :chart-data="chartData[index]"    
                             >        
@@ -34,7 +35,7 @@ import Vue from 'vue'
 import LineChart from './LineChart.vue'
 
 export default {
-    props: ["cityData"],
+    props: ["cityData", "active"],
 
     components: {
         LineChart
@@ -95,6 +96,18 @@ export default {
         this.forecastVariables.forEach((variable, index) => {
             this.chartData = [...this.chartData, this.prepareDataset(48, variable)]
         })
+    },
+    beforeUpdate() {
+        if (this.active) { // render changes only if the plot is active
+            let variables = this.forecastVariables.map(v => this.$t(v))
+            this.chartData = this.chartData.map((variableData, index) => {
+                return {
+                    ...variableData,
+                    locale: this.$i18n.locale,
+                    variable: variables[index]
+                }
+            })
+        }
     }
 };
 </script>
