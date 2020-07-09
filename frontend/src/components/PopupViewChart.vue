@@ -98,13 +98,21 @@ export default {
         })
     },
     beforeUpdate() {
-        if (this.active) { // render changes only if the plot is active
+        if (this.active) { // change data immediately only if the plot is active
             let variables = this.forecastVariables.map(v => this.$t(v))
             this.chartData = this.chartData.map((variableData, index) => {
                 return {
                     ...variableData,
                     locale: this.$i18n.locale,
-                    variable: variables[index]
+                    variable: variables[index],
+                    datasets: [
+                        {
+                            ...variableData.datasets[0],
+                            label: this.$i18n.locale === 'el' // translate city name on label
+                                ? this.$t(this.cityData.name.toLowerCase())
+                                : this.cityData.name
+                        }
+                    ]
                 }
             })
         }
