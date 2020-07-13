@@ -142,7 +142,7 @@ export default {
           center: {lat: 38.436111, lng: 26.112442},
           bounds: null,
           allCityData: [],
-          activeCityPopup: ''
+          activeCityPopup: null // city name of displayed popup
         };
     },
     methods: {

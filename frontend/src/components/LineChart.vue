@@ -4,6 +4,16 @@ const { reactiveProp } = mixins
 import moment from 'moment'
 import elLocale from 'moment/locale/el'
 
+/*
+  Inside the chartData prop, we may pass the following properties:
+
+    Name        Type      Action 
+    ---------------------------------------------------------------------
+    title       string    sets the plot title
+    variable    string    sets the plot y-axis label
+    locale      string    converts x-axis dates according to given locale
+*/
+
 export default {
     extends: Line,
     mixins: [reactiveProp],
@@ -58,11 +68,17 @@ export default {
                       }
                   ]
                 },
+                title: {
+                    display: this.chartData.title ? true : false,
+                    text: this.chartData.title ? this.chartData.title : null,
+                    fontSize: 14,
+                    padding: 2
+                },
                 legend: {
                     display: false
                 },
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
             }
         }
     },
@@ -71,6 +87,7 @@ export default {
         chartData () { // options are not reactive, so we use a watcher
             let newOptions = { ...this.options }
             newOptions.scales.yAxes[0].scaleLabel.labelString = this.chartData.variable // update y-axis variable label
+            newOptions.title.text = this.chartData.title // update plot title
             this.renderChart(this.chartData, newOptions) // render anew
         }
     },
