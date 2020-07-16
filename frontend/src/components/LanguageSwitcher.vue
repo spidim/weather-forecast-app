@@ -35,25 +35,28 @@ export default {
 
     methods: {
         switchLocale: function(locale) {
-            /* switches locale */
+        /* switches locale */
             this.$i18n.locale = locale;
             window.localStorage.setItem('locale', locale); // update key
+            this.$store.dispatch('chartData/setLocale', this.$i18n.locale); // update store state
         },
 
         getActiveLanguage: function() {
-            /* return language name of the active locale */
+        /* return language name of the active locale */
             return this.locales.find(l => {return l.locale === this.$i18n.locale}).language;
         },
 
         getActiveLocale: function() {
-            /* return active locale */
+        /* return active locale */
             return this.$i18n.locale;
         }
     },
 
     created () {
-        if (window.localStorage.getItem('locale')) // if key is set, otherwise defaults to en
+        if (window.localStorage.getItem('locale')){ // if key is set, otherwise defaults to en
             this.$i18n.locale = window.localStorage.getItem('locale');
+            //this.$store.dispatch('chartData/setLocale', this.$i18n.locale);
+        }
     }
 }
 </script>

@@ -27,6 +27,7 @@
     "vue-i18n": "8.18.2",
     "vue-router": "^3.3.4",
     "vue2-leaflet": "^2.5.2",
+    "vuex": "^3.5.1",
     "weather_forecast_api": "^1.0.0"
   },
   "devDependencies": {

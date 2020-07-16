@@ -43,9 +43,18 @@
                         @popupclose="activeCityPopup = ''"
                         @popupopen="activeCityPopup = city"
                     >
+                        <l-tooltip
+                            :options="{
+                                direction: 'bottom',
+                                offset: [16, 16],
+                                opacity: activeCityPopup !== city ? 0.9 : 0 // hide active city popup tooltip
+                            }"
+                        >
+                            {{ $t(city.name.toLowerCase()) }}
+                        </l-tooltip>
                         <l-popup :options="{'maxWidth': 'auto'}">
                             <PopupViewChart
-                                :cityData="allCityData[index]"
+                                :chartData="chartData[index]"
                                 :active="activeCityPopup === city"
                             >
                             </PopupViewChart>
@@ -107,13 +116,13 @@
 </template>
 
 <script>
-import data from '../../response.json'
-import {LMap, LTileLayer, LMarker, LIcon, LPopup, LControlAttribution} from 'vue2-leaflet'
+import { LMap, LTileLayer, LMarker, LIcon, LPopup, LControlAttribution, LTooltip } from 'vue2-leaflet'
 import { Icon }  from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 //import PopupView from './PopupView.vue'
 import PopupViewChart from './PopupViewChart.vue'
 import BackendApiHandler from '../utils/BackendApiHandler.js'
+import { mapGetters } from 'vuex'
 
 // this part resolve an issue where the markers would not appear
 delete Icon.Default.prototype._getIconUrl;
@@ -132,8 +141,8 @@ export default {
         LIcon,
         LPopup,
         LControlAttribution,
-        //PopupView,
-        PopupViewChart
+        PopupViewChart,
+        LTooltip
     },
     data () {
         return {
@@ -141,54 +150,31 @@ export default {
           zoom: 6,
           center: {lat: 38.436111, lng: 26.112442},
           bounds: null,
-          allCityData: [],
           activeCityPopup: null // city name of displayed popup
         };
     },
     methods: {
-    zoomUpdated (zoom) {
-      this.zoom = zoom;
-    },
-    centerUpdated (center) {
-      this.center = center;
-    },
-    boundsUpdated (bounds) {
-      this.bounds = bounds;
-    },
-    parseAllCityInfo(error, data, response) {
-        if (error) {
-            console.error(error);
-        } else {
-            console.log('API called successfully. Returned data: ' + JSON.stringify(data));
-            this.allCityData = data;
+        zoomUpdated (zoom) {
+          this.zoom = zoom;
+        },
+        centerUpdated (center) {
+          this.center = center;
+        },
+        boundsUpdated (bounds) {
+          this.bounds = bounds;
+        },
+        l_icon(icon) {
+            return L.icon({
+                iconUrl: icon,
+                iconSize:     [64, 64], // size of the icon
+                shadowSize:   [50, 64], // size of the shadow
+                iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
+            })
         }
-    },
-    initDataOnMap() {
-        const backendapi = new BackendApiHandler();
-        backendapi.getAllCityInfo(this.parseAllCityInfo);
-    },
-    l_icon(icon) {
-        return L.icon({
-            iconUrl: icon,
-            iconSize:     [64, 64], // size of the icon
-            shadowSize:   [50, 64], // size of the shadow
-            iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
-        })
-    },
-    /*resetZoom(cityName) {
-        this.$refs[cityName][0].reset([0, 1, 2]);
-    }*/
   },
   created() {
     console.log('Load our data first');
-    if (process.env.NODE_ENV === 'development') {
-        this.allCityData = data;
-    }
-    else {
-        this.initDataOnMap();
-    }
-
-    //this.refer = this.allCityData.map(city => city.name);
+    this.$store.dispatch('allCityData/setAllCityDataAsync')
   },
   computed: {
     centerSimple() {
@@ -212,6 +198,14 @@ export default {
         out = out.replace("_northEast", "NE");
         return out;
     },
+    
+    // map store state to computed properties
+    ...mapGetters('allCityData', {
+        allCityData: 'getAllCityData'
+    }),
+    ...mapGetters('chartData', {
+        chartData: 'getChartData'
+    })
   }
 }
 </script>

@@ -9,18 +9,11 @@ import Forecasts from './components/Forecasts.vue';
 import MeteoMap from './components/MeteoMap.vue';
 import About from './components/About.vue'
 import Terms from './components/Terms.vue'
-import VueI18n from 'vue-i18n';
-import messages from './lang/index.js';
+import i18n from './lang/i18n.js'
+import store from './store'
 
 Vue.use(BootstrapVue)
 Vue.use(VueRouter)
-Vue.use(VueI18n);
-
-const i18n = new VueI18n({
-	locale: 'en',
-	fallbackLocale: 'en',
-	messages
-});
 
 const routes = [
   { path: '/forecast', component: Forecasts },
@@ -37,6 +30,7 @@ const router = new VueRouter({
 new Vue({
   el: '#app',
   router,
+  store,
   i18n,
   render: h => h(App)
 })
