@@ -1,5 +1,5 @@
 /* Language switcher component
-   Provides an interface to interact with vue-i18n for switching language
+   Provides a UI interface to interact with vue-i18n for switching language
 */
 
 <template>

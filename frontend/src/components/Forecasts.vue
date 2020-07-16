@@ -25,7 +25,7 @@
             </b-col>
         </b-row>
         <b-row>
-            <b-col class="p-3">{{ getTableTitle }}</b-col>
+            <b-col class="p-3">{{ tableTitle }}</b-col>
         </b-row>
         <b-row md="12" class="mt-4">
             <b-col class="">
@@ -34,8 +34,8 @@
                     striped hover borderless sticky-header
                     :style="{height: (selectedCity !== -1 ? '25vh' : '70vh')}"
                     small head-variant="light"
-                    :items="forecast_items"
-                    :fields="forecast_fields"
+                    :items="forecastItems"
+                    :fields="forecastFields"
                 >
                     <!-- if selectedCity is set to an entry in allCityData -->
                     <template v-if="selectedCity !== -1" v-slot:[translateTableKey()]="data">
@@ -90,9 +90,6 @@
 </template>
 
 <script>
-import {LIcon} from 'vue2-leaflet'
-import 'leaflet/dist/leaflet.css'
-import BackendApiHandler from '../utils/BackendApiHandler.js'
 import Controls from './Controls.vue'
 import Modal from './Modal.vue'
 import LineChart from './LineChart.vue'
@@ -117,32 +114,11 @@ export default {
 
   components: {
       Controls,
-      LIcon,
       Modal,
       LineChart
   },
 
   methods: {
-      parseAllCityInfo(error, data, response) {
-          if (error) {
-              console.error(error);
-          } else {
-              console.log('API called successfully. Returned data: ' + JSON.stringify(data));
-              this.allCityData = data;
-          }
-      },
-      initDataOnTable() {
-          const backendapi = new BackendApiHandler();
-          backendapi.getAllCityInfo(this.parseAllCityInfo);
-      },
-      l_icon(icon) {
-          return L.icon({
-              iconUrl: icon,
-              iconSize:     [64, 64], // size of the icon
-              shadowSize:   [50, 64], // size of the shadow
-              iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
-          })
-      },
       toggleShowPlot (event, cityName) {
       /* load plot for cityName */
           event.preventDefault();
@@ -171,7 +147,7 @@ export default {
   },
 
   computed: {
-      forecast_items: function () {
+      forecastItems: function () {
           let data_for_table = [];
           this.allCityData.forEach(city => {
               var curr_data = {
@@ -186,7 +162,7 @@ export default {
           });
           return data_for_table;
       },
-      forecast_fields: function () {
+      forecastFields: function () {
           var currentDate = new Date(); // correct if we have fresh data, otherwise we should read start date from allCityData
           var options = { weekday: 'short', hour: '2-digit'};
           var fields = [
@@ -209,7 +185,7 @@ export default {
           }
         return fields;
       },
-      getTableTitle: function () {
+      tableTitle: function () {
           let unit_map = {
               "temperature" : "\u2103",
               "pressure" : "hPa",
@@ -222,9 +198,6 @@ export default {
       }),
       ...mapGetters({
           chartData: 'chartData/getChartData'
-      }),
-      ...mapGetters({
-          chartDataWithParams: (index, variable) => `chartData/getChartDataWithParams(${index}, ${variable})`
       })
   },
   
