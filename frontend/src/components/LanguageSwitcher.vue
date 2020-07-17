@@ -38,7 +38,7 @@ export default {
         /* switches locale */
             this.$i18n.locale = locale;
             window.localStorage.setItem('locale', locale); // update key
-            this.$store.dispatch('chartData/setLocale', this.$i18n.locale); // update store state
+            this.$store.dispatch('locale/setLocale', this.$i18n.locale); // update store state
         },
 
         getActiveLanguage: function() {

@@ -27,10 +27,12 @@ const router = new VueRouter({
   routes
 })
 
-new Vue({
+const app = new Vue({
   el: '#app',
   router,
   store,
   i18n,
   render: h => h(App)
 })
+
+//console.log('app.$i18n._vm._uid', app.$i18n._vm._uid);

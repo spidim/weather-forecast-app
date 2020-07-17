@@ -1,4 +1,4 @@
-import i18n from '../lang/i18n.js' // used solely for translation purposes, not included in state
+import store from './' // just for store.i18n services
 /*
   chartData Schema
   ----------------
@@ -43,18 +43,18 @@ const generateData = (state, source) => {
         			data.push(entry);
 				})
 				chartData[variable] = {
-					locale: state.locale,
-		    		variable: i18n.t(variable), // pass selected variable name
+					locale: store.i18n.locale,
+		    		variable: store.i18n.t(variable), // pass selected variable name
 		    		labels: labels,
-		    		title: state.locale === 'el'
-		            	? i18n.t(city.name.toLowerCase())
+		    		title: store.i18n.locale === 'el'
+		            	? store.i18n.t(city.name.toLowerCase())
 		            	: city.name,
 		    		datasets: [{
 		           		fill: false,
 		           		tension: 0,
 		           		borderColor: "#80b6f4", // if more than one datasets, color should be set randomly or left to chart.js to decide
-		           		label: state.locale === 'el' // translate city name on label
-		               		? i18n.t(city.name.toLowerCase())
+		           		label: store.i18n.locale === 'el' // translate city name on label
+		               		? store.i18n.t(city.name.toLowerCase())
 		               		: city.name,
 		           		data: data
 		        	}]
@@ -74,8 +74,7 @@ const generateData = (state, source) => {
 }
 
 const state = () => ({
-	chartData: [],
-	locale: window.localStorage.getItem('locale') || 'en' // locale value from local storage, otherwise default to 'en'
+	chartData: []
 })
 
 const getters = {
@@ -90,7 +89,6 @@ const mutations = {
 
 	setLocale: (state, locale) => {
 		state.locale = locale
-    	i18n.locale = locale // set translation locale
     }
 }
 

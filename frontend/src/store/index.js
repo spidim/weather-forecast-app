@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import chartData from './chartData'
 import allCityData from './allCityData'
+import locale from './locale'
+import i18n from '../lang/i18n.js'
 
 Vue.use(Vuex);
 
@@ -10,13 +12,17 @@ const debug = process.env.NODE_ENV !== 'production';
 const store = new Vuex.Store({
 	modules: {
 		allCityData,
-		chartData
+		chartData,
+		locale
 	},
 	strict: debug
 });
 
+Vue.set(store, 'i18n', i18n) // expose i18n to store as 'store.i18n'
+//console.log('store.i18n._vm._uid', store.i18n._vm._uid);
+
 store.watch(
-	(state, getters) => getters['chartData/getLocale'], // when locale changes
+	(state, getters) => getters['locale/getLocale'], // when locale changes
 	() => {
 		store.dispatch('chartData/generateChartData', store.getters['allCityData/getAllCityData']); // generate plot data
 		if (debug) {

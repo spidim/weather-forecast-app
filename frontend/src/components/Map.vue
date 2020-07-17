@@ -40,7 +40,7 @@
                     <l-marker v-for="(city, index) in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
                         :lat-lng="[city.coords.lat,city.coords.lon]"
                         :icon="l_icon(city.currWeatherIconId)"
-                        @popupclose="activeCityPopup = ''"
+                        @popupclose="activeCityPopup = null"
                         @popupopen="activeCityPopup = city"
                     >
                         <l-tooltip
