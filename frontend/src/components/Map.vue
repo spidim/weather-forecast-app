@@ -46,13 +46,18 @@
                         <l-tooltip
                             :options="{
                                 direction: 'bottom',
-                                offset: [16, 16],
+                                offset: [iconOptions.iconAnchor[0], iconOptions.iconAnchor[1]/2],
                                 opacity: activeCityPopup !== city ? 0.9 : 0 // hide active city popup tooltip
                             }"
                         >
                             {{ $t(city.name.toLowerCase()) }}
                         </l-tooltip>
-                        <l-popup :options="{'maxWidth': 'auto'}">
+                        <l-popup
+                            :options="{
+                                'maxWidth': 'auto',
+                                offset: [iconOptions.iconAnchor[0], 0]
+                            }"
+                        >
                             <PopupViewChart
                                 :chartData="chartData[index]"
                                 :active="activeCityPopup === city"
@@ -132,6 +137,7 @@ Icon.Default.mergeOptions({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png')
 });
+
 export default {
     name: 'Map',
     components: {
@@ -146,11 +152,16 @@ export default {
     },
     data () {
         return {
-          mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-          zoom: 6,
-          center: {lat: 38.436111, lng: 26.112442},
-          bounds: null,
-          activeCityPopup: null // city name of displayed popup
+            iconOptions: {
+                iconSize:     [64, 64], // size of the icon
+                shadowSize:   [50, 64], // size of the shadow
+                iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
+            },
+            mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+            zoom: 6,
+            center: {lat: 38.436111, lng: 26.112442},
+            bounds: null,
+            activeCityPopup: null // city name of displayed popup
         };
     },
     methods: {
@@ -166,46 +177,44 @@ export default {
         l_icon(icon) {
             return L.icon({
                 iconUrl: icon,
-                iconSize:     [64, 64], // size of the icon
-                shadowSize:   [50, 64], // size of the shadow
-                iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
+                ...this.iconOptions
             })
         }
-  },
-  created() {
-    console.log('Load our data first');
-    this.$store.dispatch('allCityData/setAllCityDataAsync')
-  },
-  computed: {
-    centerSimple() {
-    /* formats center as "(lat, lng)" */
-        return `(${this.center.lat.toFixed(6)}, ${this.center.lng.toFixed(6)})`;
     },
-
-    boundsSimple() {
-    /* formats bounds as "SW: (lat, lng) NE: (lat, lng)" */
-        var out = "";
-        if (this.bounds) {
-            Object.keys(this.bounds).forEach(
-                (el) => {
-                    // add values for each property
-                    out += el + ": (" + Object.values(this.bounds[el]).join(", ") + ") ";
-                }
-            )
-        }
-
-        out = out.replace("_southWest", "SW");
-        out = out.replace("_northEast", "NE");
-        return out;
+    created() {
+        console.log('Load our data first');
+        this.$store.dispatch('allCityData/setAllCityDataAsync')
     },
-    
-    // map store state to computed properties
-    ...mapGetters('allCityData', {
-        allCityData: 'getAllCityData'
-    }),
-    ...mapGetters('chartData', {
-        chartData: 'getChartData'
-    })
-  }
+    computed: {
+        centerSimple() {
+        /* formats center as "(lat, lng)" */
+            return `(${this.center.lat.toFixed(6)}, ${this.center.lng.toFixed(6)})`;
+        },
+
+        boundsSimple() {
+        /* formats bounds as "SW: (lat, lng) NE: (lat, lng)" */
+            var out = "";
+            if (this.bounds) {
+                Object.keys(this.bounds).forEach(
+                    (el) => {
+                        // add values for each property
+                        out += el + ": (" + Object.values(this.bounds[el]).join(", ") + ") ";
+                    }
+                )
+            }
+
+            return out
+                .replace("_southWest", "SW")
+                .replace("_northEast", "NE");
+        },
+
+        // map store state to computed properties
+        ...mapGetters('allCityData', {
+            allCityData: 'getAllCityData'
+        }),
+        ...mapGetters('chartData', {
+            chartData: 'getChartData'
+        })
+    }
 }
 </script>
