@@ -2,9 +2,9 @@
 <div class="popup">
     <b-card no-body>
         <b-tabs pills>
-        	<b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
-        		<b-container style="overflow: auto;">
-        			<b-row class="p-0">
+            <b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
+                <b-container style="overflow: auto;">
+                    <b-row class="p-0">
                         <b-col md="12" class="p-0 m-0 b-0"
                             align="center"
                             style="height: 275px; overflow: auto;"
@@ -39,8 +39,8 @@
                             </LineChart>
                         </b-col>
                     </b-row>
-        		</b-container>
-        	</b-tab>
+                </b-container>
+            </b-tab>
         </b-tabs>
     </b-card>
 </div>
@@ -79,7 +79,8 @@ export default {
     methods: {
         zoom: function(amount, index) {
             /* increase zoomscale[index] by given amount */
-            var val = this.zoomscale[index] + ((this.zoomscale[index] + amount >= 1.0) ? amount : 0);
+            let val = Math.round((this.zoomscale[index] + amount + Number.EPSILON) * 100) / 100; // https://stackoverflow.com/questions/11832914/round-to-at-most-2-decimal-places-only-if-necessary
+            val = val >= 1.0 ? val : 1.0;
             Vue.set(this.zoomscale, index, val);
         },
 

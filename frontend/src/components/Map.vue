@@ -40,14 +40,14 @@
                     <l-marker v-for="(city, index) in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
                         :lat-lng="[city.coords.lat,city.coords.lon]"
                         :icon="l_icon(city.currWeatherIconId)"
-                        @popupclose="activeCityPopup = null; resetZoom(index);"
-                        @popupopen="activeCityPopup = city"
+                        @popupclose="activeCityPopup = -1; resetZoom(index);"
+                        @popupopen="activeCityPopup = city.id"
                     >
                         <l-tooltip
                             :options="{
                                 direction: 'bottom',
                                 offset: [iconOptions.iconAnchor[0], iconOptions.iconAnchor[1]/2],
-                                opacity: activeCityPopup !== city ? 0.9 : 0 // hide active city popup tooltip
+                                opacity: activeCityPopup !== city.id ? 0.9 : 0 // hide active city popup tooltip
                             }"
                         >
                             {{ $t(city.name.toLowerCase()) }}
@@ -60,7 +60,7 @@
                         >
                             <PopupViewChart
                                 :chartData="chartData[index]"
-                                :active="activeCityPopup === city"
+                                :active="activeCityPopup === city.id"
                                 :ref="index"
                             >
                             </PopupViewChart>
@@ -162,7 +162,7 @@ export default {
             zoom: 6,
             center: {lat: 38.436111, lng: 26.112442},
             bounds: null,
-            activeCityPopup: null // city name of displayed popup
+            activeCityPopup: -1 // city id of displayed popup
         };
     },
     methods: {
