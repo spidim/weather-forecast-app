@@ -40,7 +40,7 @@
                     <l-marker v-for="(city, index) in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
                         :lat-lng="[city.coords.lat,city.coords.lon]"
                         :icon="l_icon(city.currWeatherIconId)"
-                        @popupclose="activeCityPopup = null"
+                        @popupclose="activeCityPopup = null; resetZoom(index);"
                         @popupopen="activeCityPopup = city"
                     >
                         <l-tooltip
@@ -61,6 +61,7 @@
                             <PopupViewChart
                                 :chartData="chartData[index]"
                                 :active="activeCityPopup === city"
+                                :ref="index"
                             >
                             </PopupViewChart>
                         </l-popup>
@@ -179,6 +180,9 @@ export default {
                 iconUrl: icon,
                 ...this.iconOptions
             })
+        },
+        resetZoom(cityIndex) {
+            this.$refs[cityIndex][0].reset([0,1,2])
         }
     },
     created() {

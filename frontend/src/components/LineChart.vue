@@ -17,6 +17,13 @@ import elLocale from 'moment/locale/el'
 export default {
     extends: Line,
     mixins: [reactiveProp],
+    props: {
+        scale: { // plot scale factor (used for zooming)
+            type: Number,
+            required: false,
+            default: 1.0
+        }
+    },
 
     data () {
         return {
@@ -79,6 +86,28 @@ export default {
                 },
                 responsive: true,
                 maintainAspectRatio: false,
+                devicePixelRatio: this.scale
+            }
+        }
+    },
+
+    methods: {
+        scaleTooltip (scale) {
+        /* set tooltip options according to scale */
+            return {
+                // default values divided by scale (https://www.chartjs.org/docs/latest/configuration/tooltip.html)
+                titleFontSize: (12 / this.scale),
+                bodyFontSize:  (12 / this.scale),
+                titleSpacing: (2 / this.scale),
+                titleMarginBottom: (6 / this.scale),
+                bodySpacing: (2 / this.scale),
+                footerSpacing: (2 / this.scale),
+                footerMarginTop: (6 / this.scale),
+                xPadding: (6 / this.scale),
+                yPadding: (6 / this.scale),
+                caretPadding: (2 / this.scale),
+                caretSize: (5 / this.scale),
+                cornerRadius: (6 / this.scale),   
             }
         }
     },
@@ -86,8 +115,23 @@ export default {
     watch: {
         chartData () { // options are not reactive, so we use a watcher
             let newOptions = { ...this.options }
+            
+            newOptions.devicePixelRatio = this.scale // scaling factor
             newOptions.scales.yAxes[0].scaleLabel.labelString = this.chartData.variable // update y-axis variable label
             newOptions.title.text = this.chartData.title // update plot title
+            
+            this.renderChart(this.chartData, newOptions) // render anew
+        },
+
+        scale () {
+            let newOptions = { ...this.options }
+            
+            newOptions.devicePixelRatio = this.scale // set scaling factor
+            newOptions.responsiveAnimationDuration = 0 // disable animations when scaling
+            newOptions.animation = { duration : 0 }
+
+            newOptions.tooltips = this.scaleTooltip(this.scale)
+            
             this.renderChart(this.chartData, newOptions) // render anew
         }
     },
