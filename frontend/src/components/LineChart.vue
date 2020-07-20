@@ -119,6 +119,8 @@ export default {
             newOptions.devicePixelRatio = this.scale // scaling factor
             newOptions.scales.yAxes[0].scaleLabel.labelString = this.chartData.variable // update y-axis variable label
             newOptions.title.text = this.chartData.title // update plot title
+
+            newOptions.tooltips = this.scaleTooltip(this.scale)
             
             this.renderChart(this.chartData, newOptions) // render anew
         },

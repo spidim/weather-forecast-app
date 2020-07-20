@@ -22,13 +22,18 @@
             </b-col>
             <b-col cols=10>
                 <l-map
-                    :options="{attributionControl: false, preferCanvas: true}"
+                    :options="{
+                        attributionControl: false,
+                        preferCanvas: true,
+                        wheelPxPerZoomLevel: activeCityPopup !== -1 ? Number.MAX_VALUE : 60 // prevent wheel zooming when popup is displayed
+                    }"
                     style="height: 80vh; width: 100%; margin-left: auto; margin-right: auto;"
                     :zoom="zoom"
                     :center="center"
                     @update:zoom="zoomUpdated"
                     @update:center="centerUpdated"
-                    @update:bounds="boundsUpdated">
+                    @update:bounds="boundsUpdated"
+                >
 
                     <l-tile-layer :url="mapUrl"></l-tile-layer>
 

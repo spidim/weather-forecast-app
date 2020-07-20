@@ -2,9 +2,9 @@
 <div class="popup">
     <b-card no-body>
         <b-tabs pills>
-            <b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
-                <b-container style="overflow: auto;">
-                    <b-row class="p-0">
+        	<b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
+        		<b-container style="overflow: auto;">
+        			<b-row class="p-0">
                         <b-col md="12" class="p-0 m-0 b-0"
                             align="center"
                             style="height: 275px; overflow: auto;"
@@ -30,7 +30,7 @@
                                 :styles="{height: '100%', width: '100%'}"
                                 :chart-data="chartData.variables[variable]"
                                 :scale="zoomscale[index]"
-                                class="zoomable smooth"
+                                class="zoomable smooth chartJS"
                                 v-bind:style="{
                                     transform: 'scale(' + zoomscale[index] + ')',
                                     cursor: dragging ? 'grab' : 'auto'
@@ -39,8 +39,8 @@
                             </LineChart>
                         </b-col>
                     </b-row>
-                </b-container>
-            </b-tab>
+        		</b-container>
+        	</b-tab>
         </b-tabs>
     </b-card>
 </div>
@@ -142,5 +142,15 @@ export default {
 
 .smooth.slow {
     transition-duration: 0.3s;
+}
+
+.chartJS {
+/* fixes blurring issues when scaling (https://github.com/chartjs/Chart.js/issues/2814) */
+    image-rendering: optimizeSpeed;             /* Older versions of FF */
+    image-rendering: -moz-crisp-edges;          /* FF 6.0+ */
+    image-rendering: -webkit-optimize-contrast; /* Webkit (non standard naming) */
+    image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+    image-rendering: crisp-edges;               /* Possible future browsers. */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE (non standard naming) */
 }
 </style>
