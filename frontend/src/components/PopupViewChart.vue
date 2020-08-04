@@ -162,8 +162,8 @@ export default {
 }
 
 .plot {
-    height: 275px,
-    overflow: auto
+    height: 275px;
+    overflow: auto;
 }
 
 .fix-blur {
