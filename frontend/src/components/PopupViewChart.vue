@@ -163,7 +163,11 @@ export default {
 
 .plot {
     height: 275px;
+<<<<<<< HEAD
     overflow: auto;
+=======
+    overflow: auto
+>>>>>>> 8b83cdba37c380f33ddc51c5db5e1d17706c0276
 }
 
 .fix-blur {
