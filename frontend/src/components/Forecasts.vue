@@ -65,7 +65,7 @@
             </b-col>
         </b-row>
         <!-- plot renders only if a city is selected -->
-        <b-container v-if="allCityData && allCityData.length && selectedCity !== -1">
+        <b-container v-if="selectedCity !== -1">
             <b-row class="text-center">
                 <b-col>
                     <!-- plot timeline duration control -->

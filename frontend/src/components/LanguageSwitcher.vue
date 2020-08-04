@@ -55,7 +55,6 @@ export default {
     created () {
         if (window.localStorage.getItem('locale')){ // if key is set, otherwise defaults to en
             this.$i18n.locale = window.localStorage.getItem('locale');
-            //this.$store.dispatch('chartData/setLocale', this.$i18n.locale);
         }
     }
 }

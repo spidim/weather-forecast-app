@@ -7,7 +7,7 @@
         			<b-row class="p-0">
                         <b-col md="12" class="p-0 m-0 b-0"
                             align="center"
-                            style="height: 275px; overflow: auto;"
+                            class="plot"
                             v-bind:id="'container' + index"
                             @wheel.prevent="$emit('wheel', $event, index)"
                             @dragstart.prevent
@@ -15,10 +15,13 @@
                             v-on:mouseup = "dragStop($event)"
                             v-on:mousemove = "dragOn($event, index)"
                         >
-                            <b-button-group size="sm" style="z-index: 1; position: fixed; top: 55px; left: 30px;" class="smooth slow"
-                                v-bind:style="{opacity: showbuttons}"
-                                @mouseenter="showbuttons = 1;"
-                                @mouseleave="showbuttons = 0;"
+                            <!-- buttons functional only when mouse is hovering and/or no plot dragging occurs -->
+                            <b-button-group 
+                                v-if="!dragging || showButtons"
+                                size="sm" class="button-group smooth slow"
+                                v-bind:style="{opacity: showButtons}"
+                                @mouseenter="showButtons = 1;"
+                                @mouseleave="showButtons = 0;"
                             >
                                 <b-button variant="light" @click="zoom(0.2, index);"><strong>+</strong></b-button>
                                 <b-button variant="light" @click="zoom(-0.2, index);"><strong>-</strong></b-button>
@@ -29,12 +32,12 @@
                                 v-if="active"
                                 :styles="{height: '100%', width: '100%'}"
                                 :chart-data="chartData.variables[variable]"
-                                :scale="zoomscale[index]"
-                                class="zoomable smooth chartJS"
+                                :scale="zoomScale[index]"
+                                class="zoomable smooth fix-blur"
                                 v-bind:style="{
-                                    transform: 'scale(' + zoomscale[index] + ')',
-                                    cursor: dragging ? 'grab' : 'auto'
-                                }"    
+                                    transform: 'scale(' + zoomScale[index] + ')',
+                                    cursor: dragging && zoomScale[index] > 1.0 ? 'grab' : 'auto'
+                                }"  
                             >        
                             </LineChart>
                         </b-col>
@@ -51,10 +54,17 @@ import Vue from 'vue'
 import LineChart from './LineChart.vue'
 
 export default {
-    props: [
-        "chartData", // city forecast data
-        "active"    // popup active flag
-    ],
+    props: {
+        chartData: { // city forecast data
+            type: Object,
+            required: true
+        },
+        active: { // popup active flag (if set, renders plot immediately on chartData changes)
+            type: Boolean,
+            required: false,
+            default: false
+        }
+    },
 
     components: {
         LineChart
@@ -62,10 +72,17 @@ export default {
 
     data: function() {
         return {
-            zoomscale: [1.0, 1.0, 1.0], /* zoom scale for each tab container */
-            dragcoord: [0, 0, 0, 0], /* start and end coordinations for dragging */
+            zoomScale: [1.0, 1.0, 1.0], /* zoom scale for each tab container */
+            dragCoord: { /* dragging start and end coordinations */
+                start: {
+                    x: 0, y: 0
+                },
+                end: {
+                    x: 0, y: 0
+                }
+            },
             dragging: false, /* dragging state */
-            showbuttons: 0, /* zoom buttons opacity */
+            showButtons: 0, /* zoom buttons opacity */
         }
     },
 
@@ -78,40 +95,40 @@ export default {
 
     methods: {
         zoom: function(amount, index) {
-            /* increase zoomscale[index] by given amount */
-            let val = Math.round((this.zoomscale[index] + amount + Number.EPSILON) * 100) / 100; // https://stackoverflow.com/questions/11832914/round-to-at-most-2-decimal-places-only-if-necessary
+        /* increase zoomScale[index] by given amount */
+            let val = Math.round((this.zoomScale[index] + amount + Number.EPSILON) * 100) / 100; // https://stackoverflow.com/questions/11832914/round-to-at-most-2-decimal-places-only-if-necessary
             val = val >= 1.0 ? val : 1.0;
-            Vue.set(this.zoomscale, index, val);
+            Vue.set(this.zoomScale, index, val);
         },
 
         reset: function(index) {
-            /* set zoom scale to 1.0 for given indices */
-            index.forEach(i => Vue.set(this.zoomscale, i, 1.0));
+        /* set zoom scale to 1.0 for given indices */
+            index.forEach(i => Vue.set(this.zoomScale, i, 1.0));
             this.dragging = false;
         },
 
         dragStart: function(event) {
-            /* set dragging on and save initial mouse coordinations */
+        /* set dragging on and save initial mouse coordinations */
             if(event.which == 1){ /* only on left click */
                 this.dragging = true;
-                Vue.set(this.dragcoord, 0, event.layerX);
-                Vue.set(this.dragcoord, 1, event.layerY);
+                this.dragCoord.start.x = event.layerX
+                this.dragCoord.start.y = event.layerY
             }
         },
 
         dragOn: function(event, index) {
-            /* update coordinations while dragging and scroll image */
+        /* update coordinations while dragging and scroll image */
             if(this.dragging && event.buttons && event.which == 1) { /* check left click and within element bounds */
-                Vue.set(this.dragcoord, 2, event.layerX);
-                Vue.set(this.dragcoord, 3, event.layerY);
-                var container = this.$el.querySelector("#container" + index);
-                container.scrollLeft -= this.dragcoord[2] - this.dragcoord[0];
-                container.scrollTop -= this.dragcoord[3] - this.dragcoord[1];
+                this.dragCoord.end.x = event.layerX;
+                this.dragCoord.end.y = event.layerY;
+                let container = this.$el.querySelector("#container" + index);
+                container.scrollLeft -= this.dragCoord.end.x - this.dragCoord.start.x;
+                container.scrollTop -= this.dragCoord.end.y - this.dragCoord.start.y;
             }
         },
 
-        dragStop:function(event) {
-            /* stops dragging action */
+        dragStop: function(event) {
+        /* stops dragging action */
             if(event.which == 1)
                 this.dragging = false;
         }
@@ -144,7 +161,12 @@ export default {
     transition-duration: 0.3s;
 }
 
-.chartJS {
+.plot {
+    height: 275px,
+    overflow: auto
+}
+
+.fix-blur {
 /* fixes blurring issues when scaling (https://github.com/chartjs/Chart.js/issues/2814) */
     image-rendering: optimizeSpeed;             /* Older versions of FF */
     image-rendering: -moz-crisp-edges;          /* FF 6.0+ */
@@ -152,5 +174,12 @@ export default {
     image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
     image-rendering: crisp-edges;               /* Possible future browsers. */
     -ms-interpolation-mode: nearest-neighbor;   /* IE (non standard naming) */
+}
+
+.button-group {
+    z-index: 1;
+    position: fixed;
+    top: 55px;
+    left: 30px;
 }
 </style>
