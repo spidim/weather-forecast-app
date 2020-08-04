@@ -162,7 +162,7 @@ export default {
 }
 
 .plot {
-    height: 275px,
+    height: 275px;
     overflow: auto
 }
 
