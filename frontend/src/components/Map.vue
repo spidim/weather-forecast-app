@@ -158,11 +158,6 @@ export default {
     },
     data () {
         return {
-            iconOptions: {
-                iconSize:     [64, 64], // size of the icon
-                shadowSize:   [50, 64], // size of the shadow
-                iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
-            },
             mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
             zoom: 6,
             center: {lat: 38.436111, lng: 26.112442},
@@ -215,6 +210,14 @@ export default {
             return out
                 .replace("_southWest", "SW")
                 .replace("_northEast", "NE");
+        },
+
+        iconOptions(scale = 1.0) {
+            return {
+                iconSize:     [Math.round(64/scale), Math.round(64/scale)], // size of the icon
+                shadowSize:   [Math.round(50/scale), Math.round(64/scale)], // size of the shadow
+                iconAnchor:   [Math.round(16/scale), Math.round(32/scale)], // point of the icon which will correspond to marker's location
+            }
         },
 
         // map store state to computed properties

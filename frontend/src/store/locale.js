@@ -1,5 +1,3 @@
-import store from './'
-
 const state = () => ({
 	locale: window.localStorage.getItem('locale') || 'en'
 })

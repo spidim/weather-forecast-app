@@ -5,9 +5,8 @@
         	<b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
         		<b-container style="overflow: auto;">
         			<b-row class="p-0">
-                        <b-col md="12" class="p-0 m-0 b-0"
+                        <b-col md="12" class="p-0 m-0 b-0 plot"
                             align="center"
-                            class="plot"
                             v-bind:id="'container' + index"
                             @wheel.prevent="$emit('wheel', $event, index)"
                             @dragstart.prevent

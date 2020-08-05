@@ -19,7 +19,6 @@ const store = new Vuex.Store({
 });
 
 Vue.set(store, 'i18n', i18n) // expose i18n to store as 'store.i18n'
-//console.log('store.i18n._vm._uid', store.i18n._vm._uid);
 
 store.watch(
 	(state, getters) => getters['locale/getLocale'], // when locale changes
