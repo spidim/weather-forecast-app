@@ -144,8 +144,11 @@ Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png')
 });
 
+
+
 export default {
     name: 'Map',
+
     components: {
         LMap,
         LTileLayer,
@@ -156,6 +159,15 @@ export default {
         PopupViewChart,
         LTooltip
     },
+
+    props: {
+        iconScale: { // scale map icon size
+            type: Number,
+            required: false,
+            default: 1.0
+        }
+    },
+
     data () {
         return {
             mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
@@ -165,30 +177,46 @@ export default {
             activeCityPopup: -1 // city id of displayed popup
         };
     },
+
     methods: {
         zoomUpdated (zoom) {
           this.zoom = zoom;
         },
+        
         centerUpdated (center) {
           this.center = center;
         },
+        
         boundsUpdated (bounds) {
           this.bounds = bounds;
         },
+        
         l_icon(icon) {
+            //console.log(...this.calculateIconOptions().iconAnchor)
             return L.icon({
                 iconUrl: icon,
                 ...this.iconOptions
             })
         },
+        
         resetZoom(cityIndex) {
             this.$refs[cityIndex][0].reset([0,1,2])
+        },
+        
+        calculateIconOptions(scale = this.iconScale) {
+            return {
+                iconSize:     [Math.round(64/scale), Math.round(64/scale)], // size of the icon
+                shadowSize:   [Math.round(50/scale), Math.round(64/scale)], // size of the shadow
+                iconAnchor:   [Math.round(16/scale), Math.round(32/scale)], // point of the icon which will correspond to marker's location
+            }
         }
     },
+
     created() {
         console.log('Load our data first');
         this.$store.dispatch('allCityData/setAllCityDataAsync')
     },
+
     computed: {
         centerSimple() {
         /* formats center as "(lat, lng)" */
@@ -212,12 +240,9 @@ export default {
                 .replace("_northEast", "NE");
         },
 
-        iconOptions(scale = 1.0) {
-            return {
-                iconSize:     [Math.round(64/scale), Math.round(64/scale)], // size of the icon
-                shadowSize:   [Math.round(50/scale), Math.round(64/scale)], // size of the shadow
-                iconAnchor:   [Math.round(16/scale), Math.round(32/scale)], // point of the icon which will correspond to marker's location
-            }
+        iconOptions() {
+            return this.calculateIconOptions()
+
         },
 
         // map store state to computed properties
