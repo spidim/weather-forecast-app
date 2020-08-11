@@ -205,9 +205,9 @@ export default {
         
         calculateIconOptions(scale = this.iconScale) {
             return {
-                iconSize:     [Math.round(64/scale), Math.round(64/scale)], // size of the icon
-                shadowSize:   [Math.round(50/scale), Math.round(64/scale)], // size of the shadow
-                iconAnchor:   [Math.round(16/scale), Math.round(32/scale)], // point of the icon which will correspond to marker's location
+                iconSize:     [Math.round(64*scale), Math.round(64*scale)], // size of the icon
+                shadowSize:   [Math.round(50*scale), Math.round(64*scale)], // size of the shadow
+                iconAnchor:   [Math.round(16*scale), Math.round(32*scale)], // point of the icon which will correspond to marker's location
             }
         }
     },
