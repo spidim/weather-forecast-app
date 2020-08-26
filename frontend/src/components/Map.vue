@@ -22,13 +22,18 @@
             </b-col>
             <b-col cols=10>
                 <l-map
-                    :options="{attributionControl: false, preferCanvas: true}"
+                    :options="{
+                        attributionControl: false,
+                        preferCanvas: true,
+                        wheelPxPerZoomLevel: activeCityPopup !== -1 ? Number.MAX_VALUE : 60 // prevent wheel zooming when popup is displayed
+                    }"
                     style="height: 80vh; width: 100%; margin-left: auto; margin-right: auto;"
                     :zoom="zoom"
                     :center="center"
                     @update:zoom="zoomUpdated"
                     @update:center="centerUpdated"
-                    @update:bounds="boundsUpdated">
+                    @update:bounds="boundsUpdated"
+                >
 
                     <l-tile-layer :url="mapUrl"></l-tile-layer>
 
@@ -40,13 +45,28 @@
                     <l-marker v-for="(city, index) in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
                         :lat-lng="[city.coords.lat,city.coords.lon]"
                         :icon="l_icon(city.currWeatherIconId)"
-                        @popupclose="activeCityPopup = ''"
-                        @popupopen="activeCityPopup = city"
+                        @popupclose="activeCityPopup = -1; resetZoom(index);"
+                        @popupopen="activeCityPopup = city.id"
                     >
-                        <l-popup :options="{'maxWidth': 'auto'}">
+                        <l-tooltip
+                            :options="{
+                                direction: 'bottom',
+                                offset: [iconOptions.iconAnchor[0], iconOptions.iconAnchor[1]/2],
+                                opacity: activeCityPopup !== city.id ? 0.9 : 0 // hide active city popup tooltip
+                            }"
+                        >
+                            {{ $t(city.name.toLowerCase()) }}
+                        </l-tooltip>
+                        <l-popup
+                            :options="{
+                                'maxWidth': 'auto',
+                                offset: [iconOptions.iconAnchor[0], 0]
+                            }"
+                        >
                             <PopupViewChart
-                                :cityData="allCityData[index]"
-                                :active="activeCityPopup === city"
+                                :chartData="chartData[index]"
+                                :active="activeCityPopup === city.id"
+                                :ref="index"
                             >
                             </PopupViewChart>
                         </l-popup>
@@ -107,13 +127,13 @@
 </template>
 
 <script>
-import data from '../../response.json'
-import {LMap, LTileLayer, LMarker, LIcon, LPopup, LControlAttribution} from 'vue2-leaflet'
+import { LMap, LTileLayer, LMarker, LIcon, LPopup, LControlAttribution, LTooltip } from 'vue2-leaflet'
 import { Icon }  from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 //import PopupView from './PopupView.vue'
 import PopupViewChart from './PopupViewChart.vue'
 import BackendApiHandler from '../utils/BackendApiHandler.js'
+import { mapGetters } from 'vuex'
 
 // this part resolve an issue where the markers would not appear
 delete Icon.Default.prototype._getIconUrl;
@@ -123,8 +143,12 @@ Icon.Default.mergeOptions({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png')
 });
+
+
+
 export default {
     name: 'Map',
+
     components: {
         LMap,
         LTileLayer,
@@ -132,86 +156,102 @@ export default {
         LIcon,
         LPopup,
         LControlAttribution,
-        //PopupView,
-        PopupViewChart
+        PopupViewChart,
+        LTooltip
     },
+
+    props: {
+        iconScale: { // scale map icon size
+            type: Number,
+            required: false,
+            default: 1.0
+        }
+    },
+
     data () {
         return {
-          mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-          zoom: 6,
-          center: {lat: 38.436111, lng: 26.112442},
-          bounds: null,
-          allCityData: [],
-          activeCityPopup: ''
+            mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+            zoom: 6,
+            center: {lat: 38.436111, lng: 26.112442},
+            bounds: null,
+            activeCityPopup: -1 // city id of displayed popup
         };
     },
+
     methods: {
-    zoomUpdated (zoom) {
-      this.zoom = zoom;
-    },
-    centerUpdated (center) {
-      this.center = center;
-    },
-    boundsUpdated (bounds) {
-      this.bounds = bounds;
-    },
-    parseAllCityInfo(error, data, response) {
-        if (error) {
-            console.error(error);
-        } else {
-            console.log('API called successfully. Returned data: ' + JSON.stringify(data));
-            this.allCityData = data;
+        zoomUpdated (zoom) {
+          this.zoom = zoom;
+        },
+        
+        centerUpdated (center) {
+          this.center = center;
+        },
+        
+        boundsUpdated (bounds) {
+          this.bounds = bounds;
+        },
+        
+        l_icon(icon) {
+            //console.log(...this.calculateIconOptions().iconAnchor)
+            return L.icon({
+                iconUrl: icon,
+                ...this.iconOptions
+            })
+        },
+        
+        resetZoom(cityIndex) {
+            this.$refs[cityIndex][0].reset([0,1,2])
+        },
+        
+        calculateIconOptions(scale = this.iconScale) {
+            return {
+                iconSize:     [Math.round(64*scale), Math.round(64*scale)], // size of the icon
+                shadowSize:   [Math.round(50*scale), Math.round(64*scale)], // size of the shadow
+                iconAnchor:   [Math.round(16*scale), Math.round(32*scale)], // point of the icon which will correspond to marker's location
+            }
         }
     },
-    initDataOnMap() {
-        const backendapi = new BackendApiHandler();
-        backendapi.getAllCityInfo(this.parseAllCityInfo);
+
+    created() {
+        console.log('Load our data first');
+        this.$store.dispatch('allCityData/setAllCityDataAsync')
     },
-    l_icon(icon) {
-        return L.icon({
-            iconUrl: icon,
-            iconSize:     [64, 64], // size of the icon
-            shadowSize:   [50, 64], // size of the shadow
-            iconAnchor:   [16, 32], // point of the icon which will correspond to marker's location
+
+    computed: {
+        centerSimple() {
+        /* formats center as "(lat, lng)" */
+            return `(${this.center.lat.toFixed(6)}, ${this.center.lng.toFixed(6)})`;
+        },
+
+        boundsSimple() {
+        /* formats bounds as "SW: (lat, lng) NE: (lat, lng)" */
+            var out = "";
+            if (this.bounds) {
+                Object.keys(this.bounds).forEach(
+                    (el) => {
+                        // add values for each property
+                        out += el + ": (" + Object.values(this.bounds[el]).join(", ") + ") ";
+                    }
+                )
+            }
+
+            return out
+                .replace("_southWest", "SW")
+                .replace("_northEast", "NE");
+        },
+
+        iconOptions() {
+            return this.calculateIconOptions()
+
+        },
+
+        // map store state to computed properties
+        ...mapGetters('allCityData', {
+            allCityData: 'getAllCityData'
+        }),
+        ...mapGetters('chartData', {
+            chartData: 'getChartData'
         })
-    },
-    /*resetZoom(cityName) {
-        this.$refs[cityName][0].reset([0, 1, 2]);
-    }*/
-  },
-  created() {
-    console.log('Load our data first');
-    if (process.env.NODE_ENV === 'development') {
-        this.allCityData = data;
     }
-    else {
-        this.initDataOnMap();
-    }
-
-    //this.refer = this.allCityData.map(city => city.name);
-  },
-  computed: {
-    centerSimple() {
-    /* formats center as "(lat, lng)" */
-        return `(${this.center.lat.toFixed(6)}, ${this.center.lng.toFixed(6)})`;
-    },
-
-    boundsSimple() {
-    /* formats bounds as "SW: (lat, lng) NE: (lat, lng)" */
-        var out = "";
-        if (this.bounds) {
-            Object.keys(this.bounds).forEach(
-                (el) => {
-                    // add values for each property
-                    out += el + ": (" + Object.values(this.bounds[el]).join(", ") + ") ";
-                }
-            )
-        }
-
-        out = out.replace("_southWest", "SW");
-        out = out.replace("_northEast", "NE");
-        return out;
-    },
-  }
 }
 </script>

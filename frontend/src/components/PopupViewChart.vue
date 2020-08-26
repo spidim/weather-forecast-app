@@ -5,23 +5,41 @@
         	<b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
         		<b-container style="overflow: auto;">
         			<b-row class="p-0">
-                        <!--b-container class="p-0"-->
-                        <b-col md="12" class="p-0 m-0 b-0"
-                            align="center" style="height: 275px; width: 275px; overflow: auto;"
+                        <b-col md="12" class="p-0 m-0 b-0 plot"
+                            align="center"
+                            v-bind:id="'container' + index"
+                            @wheel.prevent="$emit('wheel', $event, index)"
+                            @dragstart.prevent
+                            v-on:mousedown = "dragStart($event)"
+                            v-on:mouseup = "dragStop($event)"
+                            v-on:mousemove = "dragOn($event, index)"
                         >
+                            <!-- buttons functional only when mouse is hovering and/or no plot dragging occurs -->
+                            <b-button-group 
+                                v-if="!dragging || showButtons"
+                                size="sm" class="button-group smooth slow"
+                                v-bind:style="{opacity: showButtons}"
+                                @mouseenter="showButtons = 1;"
+                                @mouseleave="showButtons = 0;"
+                            >
+                                <b-button variant="light" @click="zoom(0.2, index);"><strong>+</strong></b-button>
+                                <b-button variant="light" @click="zoom(-0.2, index);"><strong>-</strong></b-button>
+                                <b-button variant="light" @click="reset([index]);"><strong>&#8635;</strong></b-button>
+                            </b-button-group>
+                            <!-- render plot only if popup is active -->
                             <LineChart
                                 v-if="active"
                                 :styles="{height: '100%', width: '100%'}"
-                                :chart-data="chartData[index]"    
+                                :chart-data="chartData.variables[variable]"
+                                :scale="zoomScale[index]"
+                                class="zoomable smooth fix-blur"
+                                v-bind:style="{
+                                    transform: 'scale(' + zoomScale[index] + ')',
+                                    cursor: dragging && zoomScale[index] > 1.0 ? 'grab' : 'auto'
+                                }"  
                             >        
                             </LineChart>
                         </b-col>
-                        <!--/b-container-->
-                    </b-row>
-                    <b-row>
-                        <b-col md="3"/>
-                        <b-col md="6" align="center">{{ $t(cityData.name.toLowerCase()) }}</b-col>
-                        <b-col md="3"/>
                     </b-row>
         		</b-container>
         	</b-tab>
@@ -35,7 +53,17 @@ import Vue from 'vue'
 import LineChart from './LineChart.vue'
 
 export default {
-    props: ["cityData", "active"],
+    props: {
+        chartData: { // city forecast data
+            type: Object,
+            required: true
+        },
+        active: { // popup active flag (if set, renders plot immediately on chartData changes)
+            type: Boolean,
+            required: false,
+            default: false
+        }
+    },
 
     components: {
         LineChart
@@ -43,79 +71,71 @@ export default {
 
     data: function() {
         return {
-            chartData: []
+            zoomScale: [1.0, 1.0, 1.0], /* zoom scale for each tab container */
+            dragCoord: { /* dragging start and end coordinations */
+                start: {
+                    x: 0, y: 0
+                },
+                end: {
+                    x: 0, y: 0
+                }
+            },
+            dragging: false, /* dragging state */
+            showButtons: 0, /* zoom buttons opacity */
+        }
+    },
+
+    computed: {
+        forecastVariables: function() {
+        /* returns a list of plot variables */
+            return Object.keys(this.chartData.variables)
         }
     },
 
     methods: {
-        prepareDataset: function (endHours, variable) {
-        /* prepares dataset for plot */
-            if (this.cityData) {
-                let labels = [];
-                let data = [];
-                let dt = Date.now();
+        zoom: function(amount, index) {
+        /* increase zoomScale[index] by given amount */
+            let val = Math.round((this.zoomScale[index] + amount + Number.EPSILON) * 100) / 100; // https://stackoverflow.com/questions/11832914/round-to-at-most-2-decimal-places-only-if-necessary
+            val = val >= 1.0 ? val : 1.0;
+            Vue.set(this.zoomScale, index, val);
+        },
 
-                this.cityData.forecastInfo[variable].hourlyForecast.filter((entry, index) => {
-                    if (index < endHours) { // pick datetime and selected variable measurements
-                        labels.push(dt + (index*3600000)); // where to get dt from?
-                        data.push(entry);
-                    }
-                })
+        reset: function(index) {
+        /* set zoom scale to 1.0 for given indices */
+            index.forEach(i => Vue.set(this.zoomScale, i, 1.0));
+            this.dragging = false;
+        },
 
-                return {
-                    locale: this.$i18n.locale,
-                    variable: this.$t(variable), // pass selected variable name
-                    labels: labels,
-                    datasets: [
-                        {
-                            fill: false,
-                            tension: 0,
-                            borderColor: "#80b6f4", // if more than one datasets, color should be set randomly or left to chart.js to decide
-                            label: this.$i18n.locale === 'el' // translate city name on label
-                                ? this.$t(this.cityData.name.toLowerCase())
-                                : this.cityData.name,
-                            data: data
-                        }
-                    ]
-                }
+        dragStart: function(event) {
+        /* set dragging on and save initial mouse coordinations */
+            if(event.which == 1){ /* only on left click */
+                this.dragging = true;
+                this.dragCoord.start.x = event.layerX
+                this.dragCoord.start.y = event.layerY
             }
-            else {
-                return {}
+        },
+
+        dragOn: function(event, index) {
+        /* update coordinations while dragging and scroll image */
+            if(this.dragging && event.buttons && event.which == 1) { /* check left click and within element bounds */
+                this.dragCoord.end.x = event.layerX;
+                this.dragCoord.end.y = event.layerY;
+                let container = this.$el.querySelector("#container" + index);
+                container.scrollLeft -= this.dragCoord.end.x - this.dragCoord.start.x;
+                container.scrollTop -= this.dragCoord.end.y - this.dragCoord.start.y;
             }
+        },
+
+        dragStop: function(event) {
+        /* stops dragging action */
+            if(event.which == 1)
+                this.dragging = false;
         }
     },
-    computed:
-    {
-        forecastVariables: function() {
-            let variables = this.cityData.forecastInfo
-            delete variables.overall
-            return Object.keys(variables)
-        }
-    },
-    created() {
-        this.forecastVariables.forEach((variable, index) => {
-            this.chartData = [...this.chartData, this.prepareDataset(48, variable)]
-        })
-    },
-    beforeUpdate() {
-        if (this.active) { // change data immediately only if the plot is active
-            let variables = this.forecastVariables.map(v => this.$t(v))
-            this.chartData = this.chartData.map((variableData, index) => {
-                return {
-                    ...variableData,
-                    locale: this.$i18n.locale,
-                    variable: variables[index],
-                    datasets: [
-                        {
-                            ...variableData.datasets[0],
-                            label: this.$i18n.locale === 'el' // translate city name on label
-                                ? this.$t(this.cityData.name.toLowerCase())
-                                : this.cityData.name
-                        }
-                    ]
-                }
-            })
-        }
+
+    mounted() {
+        /* listen to wheel events for zooming */
+        this.$on('wheel', (event, index) => { this.zoom(Math.sign(-event.deltaY)*0.2, index); });
     }
 };
 </script>
@@ -123,5 +143,42 @@ export default {
 <style>
 .popup {
     width: 345px;
+}
+
+.zoomable {
+    position: static;
+    transform-origin: 0 0;
+}
+
+.smooth {
+    transition: all;
+    transition-duration: 0.05s;
+    transition-timing-function: ease-in;
+}
+
+.smooth.slow {
+    transition-duration: 0.3s;
+}
+
+.plot {
+    height: 275px;
+    overflow: auto;
+}
+
+.fix-blur {
+/* fixes blurring issues when scaling (https://github.com/chartjs/Chart.js/issues/2814) */
+    image-rendering: optimizeSpeed;             /* Older versions of FF */
+    image-rendering: -moz-crisp-edges;          /* FF 6.0+ */
+    image-rendering: -webkit-optimize-contrast; /* Webkit (non standard naming) */
+    image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+    image-rendering: crisp-edges;               /* Possible future browsers. */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE (non standard naming) */
+}
+
+.button-group {
+    z-index: 1;
+    position: fixed;
+    top: 55px;
+    left: 30px;
 }
 </style>
