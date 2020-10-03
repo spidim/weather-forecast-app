@@ -43,8 +43,7 @@
                 @boundsUpdated="value => $emit('boundsUpdated', value)"
                 @activeCityPopupUpdated="value => $emit('activeCityPopupUpdated', value)"
                 @activeOpenWeatherLayersUpdated="layers => $emit('activeOpenWeatherLayersUpdated', layers)"
-            ><!-- alternatively update data member directly (e.g. zoom = value) -->
-            </GeneralMap>
+            /><!-- alternatively update data member directly (e.g. zoom = value) -->
         </b-col>
 
         <b-col>
@@ -122,7 +121,7 @@ export default {
 
             activeCityPopup: -1, // city id of displayed popup
           
-            owLayers: [ 'temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new' ], // openweather tile layers
+            //owLayers: [ 'temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new' ], // openweather tile layers
           
             options: [], // switch box options
             activeLayers: [], // selected layers (temperature and clouds by default, checks 'activeLayers' item in localStorage on created()
@@ -130,17 +129,19 @@ export default {
     },
 
     created() {
+        console.log('Load our data first');
+        this.$store.dispatch('allCityData/setAllCityDataAsync');
+
+        this.options = this.populateOptions();
+    },
+
+    mounted() {
         // map event listeners
         this.$on('zoomUpdated', value => { this.zoom = value; });
         this.$on('centerUpdated', value => { this.center = value; });
         this.$on('boundsUpdated', value => { this.bounds = value; });
         this.$on('activeCityPopupUpdated', value => { this.activeCityPopup = value; });
         this.$on('activeOpenWeatherLayersUpdated', value => { this.activeLayers = value; });
-        
-        console.log('Load our data first');
-        this.$store.dispatch('allCityData/setAllCityDataAsync');
-
-        this.options = this.populateOptions();
     },
 
     beforeUpdate() {
