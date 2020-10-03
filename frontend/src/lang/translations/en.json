@@ -22,6 +22,10 @@
   "wind": "Wind",
   "clouds": "Clouds",
   "precipitation": "Precipitation",
+  "size": "Size",
+  "small": "smal",
+  "normal": "normal",
+  "large": "large",
 
   "active layers": "Active layers",
 

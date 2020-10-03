@@ -22,6 +22,10 @@
   "wind": "Άνεμος",
   "clouds": "Σύννεφα",
   "precipitation": "Υετός",
+  "size": "Μέγεθος",
+  "small": "μικρό",
+  "normal": "κανονικό",
+  "large": "μεγάλο",
 
   "active layers": "Ενεργές στρώσεις",
   

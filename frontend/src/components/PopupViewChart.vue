@@ -15,16 +15,42 @@
                             v-on:mousemove = "dragOn($event, index)"
                         >
                             <!-- buttons functional only when mouse is hovering and/or no plot dragging occurs -->
-                            <b-button-group 
+                            <b-button-group
                                 v-if="!dragging || showButtons"
                                 size="sm" class="button-group smooth slow"
                                 v-bind:style="{opacity: showButtons}"
-                                @mouseenter="showButtons = 1;"
-                                @mouseleave="showButtons = 0;"
+                                @mouseenter="showButtons = 1 || holdShowButtons;"
+                                @mouseleave="showButtons = 0 || holdShowButtons;"
                             >
-                                <b-button variant="light" @click="zoom(0.2, index);"><strong>+</strong></b-button>
-                                <b-button variant="light" @click="zoom(-0.2, index);"><strong>-</strong></b-button>
-                                <b-button variant="light" @click="reset([index]);"><strong>&#8635;</strong></b-button>
+                                <b-button variant="light" @click="zoom(0.2, index);">
+                                    <b-icon-zoom-in/>
+                                </b-button>
+                                <b-button variant="light" @click="zoom(-0.2, index);">
+                                    <b-icon-zoom-out/>
+                                </b-button>
+                                <b-button variant="light" @click="reset([index]);">
+                                    <b-icon-arrow-clockwise/>
+                                </b-button>
+                                <b-dropdown size="sm" variant="light"
+                                    @shown="holdShowButtons = 1"
+                                    @hidden="holdShowButtons = 0"
+                                >
+                                    <template v-slot:button-content>
+                                        <b-icon-download/>
+                                    </template>
+                                    <b-dropdown-header>
+                                        {{$t('size')}}
+                                    </b-dropdown-header>
+                                    <b-dropdown-item v-for="(size, index) in [$t('small'), $t('normal'), $t('large')]"
+                                        :key="index"
+                                        class="container-fluid p-0 m-0"
+                                        size="sm"
+                                        :style="{'font-size': 75+'%'}"
+                                        @click="saveImage(variable, Math.pow(2, index))"
+                                    >
+                                        {{size}}
+                                    </b-dropdown-item>
+                                </b-dropdown>
                             </b-button-group>
                             <!-- render plot only if popup is active -->
                             <LineChart
@@ -36,9 +62,9 @@
                                 v-bind:style="{
                                     transform: 'scale(' + zoomScale[index] + ')',
                                     cursor: dragging && zoomScale[index] > 1.0 ? 'grab' : 'auto'
-                                }"  
-                            >        
-                            </LineChart>
+                                }"
+                                :ref="variable"
+                            />
                         </b-col>
                     </b-row>
         		</b-container>
@@ -49,8 +75,9 @@
 </template>
 
 <script type = "text/javascript">
-import Vue from 'vue'
-import LineChart from './LineChart.vue'
+import Vue from 'vue';
+import LineChart from './LineChart.vue';
+import { BIconDownload, BIconZoomIn, BIconZoomOut, BIconArrowClockwise } from 'bootstrap-vue';
 
 export default {
     props: {
@@ -61,12 +88,16 @@ export default {
         active: { // popup active flag (if set, renders plot immediately on chartData changes)
             type: Boolean,
             required: false,
-            default: false
+            default: true
         }
     },
 
     components: {
-        LineChart
+        LineChart,
+        BIconDownload,
+        BIconZoomIn,
+        BIconZoomOut,
+        BIconArrowClockwise
     },
 
     data: function() {
@@ -82,13 +113,14 @@ export default {
             },
             dragging: false, /* dragging state */
             showButtons: 0, /* zoom buttons opacity */
+            holdShowButtons: 0 /* keep buttons showing */
         }
     },
 
     computed: {
         forecastVariables: function() {
         /* returns a list of plot variables */
-            return Object.keys(this.chartData.variables)
+            return Object.keys(this.chartData.variables);
         }
     },
 
@@ -108,10 +140,10 @@ export default {
 
         dragStart: function(event) {
         /* set dragging on and save initial mouse coordinations */
-            if(event.which == 1){ /* only on left click */
+            if(event.which == 1) { /* only on left click */
                 this.dragging = true;
-                this.dragCoord.start.x = event.layerX
-                this.dragCoord.start.y = event.layerY
+                this.dragCoord.start.x = event.layerX;
+                this.dragCoord.start.y = event.layerY;
             }
         },
 
@@ -130,6 +162,10 @@ export default {
         /* stops dragging action */
             if(event.which == 1)
                 this.dragging = false;
+        },
+
+        saveImage(variable, scale = 1) {
+            window.open(this.$refs[variable][0].exportImage(scale));
         }
     },
 
@@ -140,7 +176,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .popup {
     width: 345px;
 }
@@ -180,5 +216,10 @@ export default {
     position: fixed;
     top: 55px;
     left: 30px;
+}
+
+*:focus {
+    outline: none;
+    box-shadow: none;
 }
 </style>
