@@ -86,7 +86,13 @@ export default {
                 },
                 responsive: true,
                 maintainAspectRatio: false,
-                devicePixelRatio: this.scale
+                devicePixelRatio: this.scale,
+                animation: {
+                },
+                elements: {
+                    point: {
+                    }
+                }
             }
         }
     },
@@ -109,6 +115,28 @@ export default {
                 caretSize: (5 / this.scale),
                 cornerRadius: (6 / this.scale),   
             }
+        },
+
+        exportImage(scale) {
+            /* export scaled canvas image to base64 string */
+            let oldDuration = this.options.animation.duration || Chart.defaults.global.animation.duration
+            let oldRadius = this.options.elements.point.radius || Chart.defaults.global.elements.point.radius
+            
+            this.options.devicePixelRatio = scale // scale canvas
+            this.options.animation.duration = 0 // disable animation (otherwise we get blank image)
+            this.options.elements.point.radius = 0 // hide points
+            this.renderChart(this.chartData, this.options)
+            //let uri = this.$refs.canvas.toDataURL("image/png")
+            let uri = this.$data._chart.toBase64Image()
+            
+            /* restore options and chart */
+            this.options.devicePixelRatio = this.scale
+            this.options.animation.duration = oldDuration
+            this.options.elements.point.radius = oldRadius
+            this.options.tooltips = this.scaleTooltip(this.scale)
+            this.renderChart(this.chartData, this.options)
+
+            return uri
         }
     },
 
