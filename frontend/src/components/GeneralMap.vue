@@ -99,10 +99,6 @@ Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png')
 });
 
-const exists = arg => {
-	return typeof arg !== 'undefined' && arg;
-}
-
 export default {
 	name: 'GeneralMap',
 
