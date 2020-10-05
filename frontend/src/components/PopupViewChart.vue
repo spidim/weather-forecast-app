@@ -1,7 +1,17 @@
 <template>
 <div class="popup">
     <b-card no-body>
-        <b-tabs pills>
+        <b-container v-if="!chartData" class="plot"><!-- no data to show -->
+            <div class="row justify-content-center">
+                <div class="col-12 text-center"><h3>{{$t('no data')}}</h3></div>
+            </div>
+            <div class="row justify-content-center align-items-end">
+                <div class="col-12 text-center align-self-end">
+                    <b-icon-x-circle scale=12 shift-v="-120%" />
+                </div>
+            </div>
+        </b-container>
+        <b-tabs v-else pills>
         	<b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
         		<b-container style="overflow: auto;">
         			<b-row class="p-0">
@@ -77,7 +87,7 @@
 <script type = "text/javascript">
 import Vue from 'vue';
 import LineChart from './LineChart.vue';
-import { BIconDownload, BIconZoomIn, BIconZoomOut, BIconArrowClockwise } from 'bootstrap-vue';
+import { BIconDownload, BIconZoomIn, BIconZoomOut, BIconArrowClockwise, BIconXCircle } from 'bootstrap-vue';
 
 export default {
     props: {
@@ -97,7 +107,8 @@ export default {
         BIconDownload,
         BIconZoomIn,
         BIconZoomOut,
-        BIconArrowClockwise
+        BIconArrowClockwise,
+        BIconXCircle
     },
 
     data: function() {
