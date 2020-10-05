@@ -1,13 +1,27 @@
 <template>
 <b-container fluid>
-	<b-row align-v="stretch" align-h="center">
+	<!--b-row align-v="stretch" align-h="center">
 		<h1>{{$t('404')}}</h1>
-  	</b-row>
+  	</b-row-->
+  	<div class="row justify-content-center">
+        <div class="col-12 text-center">
+        	<h1>{{$t('404')}}</h1>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-12 text-center">
+            <b-icon-emoji-frown scale=20 shift-v="-200%" />
+        </div>
+    </div>
 </b-container>
 </template>
 
 <script type="text/javascript">
+import { BIconEmojiFrown } from 'bootstrap-vue';
 export default {
-	name: 'PageNotFound'	
+	name: 'PageNotFound',
+	components: {
+		BIconEmojiFrown
+	}
 }
 </script>
