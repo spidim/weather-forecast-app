@@ -12,13 +12,13 @@
             </div>
         </b-container>
         <b-tabs v-else pills>
-        	<b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
-        		<b-container style="overflow: auto;">
-        			<b-row class="p-0">
+            <b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
+                <b-container style="overflow: auto;">
+                    <b-row class="p-0">
                         <b-col md="12" class="p-0 m-0 b-0 plot"
                             align="center"
                             v-bind:id="'container' + index"
-                            @wheel.prevent="$emit('wheel', $event, index)"
+                            @wheel.prevent="!openMenu && $emit('wheel', $event, index)"
                             @dragstart.prevent
                             v-on:mousedown = "dragStart($event)"
                             v-on:mouseup = "dragStop($event)"
@@ -26,11 +26,11 @@
                         >
                             <!-- buttons functional only when mouse is hovering and/or no plot dragging occurs -->
                             <b-button-group
-                                v-if="!dragging || showButtons"
+                                v-if="!dragging || showToolbar"
                                 size="sm" class="button-group smooth slow"
-                                v-bind:style="{opacity: showButtons}"
-                                @mouseenter="showButtons = 1 || holdShowButtons;"
-                                @mouseleave="showButtons = 0 || holdShowButtons;"
+                                v-bind:style="{opacity: showToolbar}"
+                                @mouseenter="showToolbar = 1 || openMenu;"
+                                @mouseleave="showToolbar = 0 || openMenu;"
                             >
                                 <b-button variant="light" @click="zoom(0.2, index);">
                                     <b-icon-zoom-in/>
@@ -42,8 +42,8 @@
                                     <b-icon-arrow-clockwise/>
                                 </b-button>
                                 <b-dropdown size="sm" variant="light"
-                                    @shown="holdShowButtons = 1"
-                                    @hidden="holdShowButtons = 0"
+                                    @shown="openMenu = 1"
+                                    @hidden="openMenu = 0"
                                 >
                                     <template v-slot:button-content>
                                         <b-icon-download/>
@@ -77,8 +77,8 @@
                             />
                         </b-col>
                     </b-row>
-        		</b-container>
-        	</b-tab>
+                </b-container>
+            </b-tab>
         </b-tabs>
     </b-card>
 </div>
@@ -123,8 +123,8 @@ export default {
                 }
             },
             dragging: false, /* dragging state */
-            showButtons: 0, /* zoom buttons opacity */
-            holdShowButtons: 0 /* keep buttons showing */
+            showToolbar: 0, /* toolbar opacity */
+            openMenu: 0 /* download menu is open */
         }
     },
 
@@ -155,17 +155,22 @@ export default {
                 this.dragging = true;
                 this.dragCoord.start.x = event.layerX;
                 this.dragCoord.start.y = event.layerY;
+                this.openMenu = 0; // close download menu and start dragging
             }
         },
 
         dragOn: function(event, index) {
         /* update coordinations while dragging and scroll image */
-            if(this.dragging && event.buttons && event.which == 1) { /* check left click and within element bounds */
-                this.dragCoord.end.x = event.layerX;
-                this.dragCoord.end.y = event.layerY;
-                let container = this.$el.querySelector("#container" + index);
-                container.scrollLeft -= this.dragCoord.end.x - this.dragCoord.start.x;
-                container.scrollTop -= this.dragCoord.end.y - this.dragCoord.start.y;
+            if(this.dragging && event.buttons && event.which == 1) { /* check left click and dragging */
+                this.showToolbar = 0; // force hide toolbar
+                
+                let container = this.$el.querySelector("#container" + index); // contains the chart
+                if (event.target != container) { // check within container bounds
+                    this.dragCoord.end.x = event.layerX;
+                    this.dragCoord.end.y = event.layerY;
+                    container.scrollLeft -= this.dragCoord.end.x - this.dragCoord.start.x;
+                    container.scrollTop -= this.dragCoord.end.y - this.dragCoord.start.y;
+                }
             }
         },
 
