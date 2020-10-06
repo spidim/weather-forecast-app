@@ -6,10 +6,10 @@
         wheelPxPerZoomLevel: activeCityPopup !== -1 ? Number.MAX_VALUE : 60 // prevent wheel zooming when popup is displayed
     }"
     :style="{
-    	height: this.height,
-    	width: this.width,
-    	marginLeft: 'auto',
-    	marginRight: 'auto'
+        height: this.height,
+        width: this.width,
+        marginLeft: 'auto',
+        marginRight: 'auto'
     }"
     :zoom="zoom"
     :center="center"
@@ -27,9 +27,9 @@
     <l-control-attribution
         position="bottomright"
         :prefix="`
-        	${openStreet ? '<a href=https://www.openstreetmap.org/copyright>© OpenStreetMap contributors</a>' : ''}
-        	${ openStreet && openWeather ? ' | ' : ''}
-        	${ openWeather ? '<a href=https://openweathermap.org/>OpenWeather</a>' : ''}
+            ${openStreet ? '<a href=https://www.openstreetmap.org/copyright>© OpenStreetMap contributors</a>' : ''}
+            ${ openStreet && openWeather ? ' | ' : ''}
+            ${ openWeather ? '<a href=https://openweathermap.org/>OpenWeather</a>' : ''}
         `"
     ></l-control-attribution>
 
@@ -100,9 +100,9 @@ Icon.Default.mergeOptions({
 });
 
 export default {
-	name: 'GeneralMap',
+    name: 'GeneralMap',
 
-	components: {
+    components: {
         LMap,
         LTileLayer,
         LMarker,
@@ -115,120 +115,122 @@ export default {
     },
 
     props: {
-    	// map height and width for css style
-    	height: {
-    		type: String,
-    		required: true,
-    		default: '80vh'
-    	},
+        // map height and width for css style
+        height: {
+            type: String,
+            required: true,
+            default: '80vh'
+        },
 
-    	width: {
-    		type: String,
-    		required: true,
-    		default: '100%'
-    	},
+        width: {
+            type: String,
+            required: true,
+            default: '100%'
+        },
 
-    	// map center, zoom and bounds
-    	center: {
-    		type: Object,
-    		required: false,
-    		default: function() {
-    			return {
-    				lat: 38.436111,
-    				lng: 26.112442
-    			}
-    		}
-    	},
+        // map center, zoom and bounds
+        center: {
+            type: Object,
+            required: false,
+            default: function() {
+                return {
+                    lat: 38.436111,
+                    lng: 26.112442
+                }
+            }
+        },
 
-    	zoom: {
-    		type: Number,
-    		required: false,
-    		default: 6
-    	},
+        zoom: {
+            type: Number,
+            required: false,
+            default: 6
+        },
 
-    	bounds: {
-    		type: Object,
-    		required: false,
-    		default: function() {
-    			return {}
-    		}
-    	},
+        bounds: {
+            type: Object,
+            required: false,
+            default: function() {
+                return {}
+            }
+        },
 
-    	// map icon size scale
-    	iconScale: {
+        // map icon size scale
+        iconScale: {
             type: Number,
             required: false,
             default: 1.0
         },
 
-    	// use OpenStreet map tiles (base map)
-    	openStreet: {
-    		type: Boolean,
-    		required: false,
-    		default: true
-    	},
+        // use OpenStreet map tiles (base map)
+        openStreet: {
+            type: Boolean,
+            required: false,
+            default: true
+        },
 
         // base map url
         mapUrl: {
-        	type: String,
-        	required: function() {
-        		return typeof this.$props.openStreet !== 'undefined' && this.$props.openStreet
-        	},
-        	default: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+            type: String,
+            required: function() {
+                return typeof this.$props.openStreet !== 'undefined' && this.$props.openStreet
+            },
+            default: function() {
+                return this.$props.openStreet ? 'http://{s}.tile.osm.org/{z}/{x}/{y}.png' : null
+            }
         },
 
         // use OpenWeather map tiles
         openWeather: {
-        	type: Boolean,
-        	required: false,
-        	default: false
+            type: Boolean,
+            required: false,
+            default: false
         },
 
         // active OpenWeather map tiles
         activeOpenWeatherLayers: {
-        	type: Array,
-        	required: function() {
-        		return typeof this.$props.openWeather !== 'undefined' && this.$props.openWeather
-        	}
+            type: Array,
+            required: function() {
+                return typeof this.$props.openWeather !== 'undefined' && this.$props.openWeather
+            }
         },
 
         openWeatherOptions: {
-        	type: Array,
-        	required: function() {
-        		return typeof this.$props.openWeather !== 'undefined' && this.$props.openWeather
-        	}
+            type: Array,
+            required: function() {
+                return typeof this.$props.openWeather !== 'undefined' && this.$props.openWeather
+            }
         },
 
         // OpenWeather tiles urls
         openWeatherTileUrls: {
-        	type: Array,
-        	required: function() {
-        		return typeof this.$props.openWeather !== 'undefined' && this.$props.openWeather
-        	}
+            type: Array,
+            required: function() {
+                return typeof this.$props.openWeather !== 'undefined' && this.$props.openWeather
+            }
         },
 
         // map markers data
         markerData: {
-        	type: Array,
-        	required: false
+            type: Array,
+            required: false
         },
 
         // popup charts data
         plotData: {
-        	type: Array,
-        	required: true
+            type: Array,
+            required: true
         },
 
         activeCityPopup: {
-        	type: Number,
-        	required: false,
-        	default: -1
+            type: Number,
+            required: false,
+            default: -1
         }
     },
 
     data() {
-    	return {
-    	}
+        return {
+        }
     },
 
     methods: {
@@ -248,11 +250,11 @@ export default {
         },
 
         activeCityPopupUpdated (id) {
-        	this.$emit('activeCityPopupUpdated', id)
+            this.$emit('activeCityPopupUpdated', id)
         },
 
         activeOpenWeatherLayersUpdated (layers) {
-        	this.$emit('activeOpenWeatherLayersUpdated', layers)
+            this.$emit('activeOpenWeatherLayersUpdated', layers)
         },
         
         l_icon(icon) {
@@ -276,14 +278,14 @@ export default {
     },
 
     created() {
-    	if(this.openWeather) {
-	        if(window.localStorage.getItem('activeLayers')) { // load control panel options from local storage
-	            this.activeLayers = JSON.parse(window.localStorage.getItem('activeLayers'))
-	        }
-	        else {
-	            this.activeLayers = ['temp_new', 'clouds_new'] // default options
-	        }
-	    }
+        if(this.openWeather) {
+            if(window.localStorage.getItem('activeLayers')) { // load control panel options from local storage
+                this.activeLayers = JSON.parse(window.localStorage.getItem('activeLayers'))
+            }
+            else {
+                this.activeLayers = ['temp_new', 'clouds_new'] // default options
+            }
+        }
     },
 
     computed: {
@@ -293,13 +295,13 @@ export default {
         },
 
         activeLayers: {
-        	/* gets and emits control box options values */
-        	get: function() {
-        		return this.activeOpenWeatherLayers
-        	},
-        	set: function(newValue) {
-        		this.activeOpenWeatherLayersUpdated(newValue);
-        	}
+            /* gets and emits control box options values */
+            get: function() {
+                return this.activeOpenWeatherLayers
+            },
+            set: function(newValue) {
+                this.activeOpenWeatherLayersUpdated(newValue);
+            }
         }
     }
 };
