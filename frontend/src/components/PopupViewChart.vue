@@ -12,9 +12,9 @@
             </div>
         </b-container>
         <b-tabs v-else pills>
-            <b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
-                <b-container style="overflow: auto;">
-                    <b-row class="p-0">
+        	<b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
+        		<b-container style="overflow: auto;">
+        			<b-row class="p-0">
                         <b-col md="12" class="p-0 m-0 b-0 plot"
                             align="center"
                             v-bind:id="'container' + index"
@@ -77,8 +77,8 @@
                             />
                         </b-col>
                     </b-row>
-                </b-container>
-            </b-tab>
+        		</b-container>
+        	</b-tab>
         </b-tabs>
     </b-card>
 </div>

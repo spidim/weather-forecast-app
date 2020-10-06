@@ -18,20 +18,20 @@
     @update:bounds="boundsUpdated"
 >
 
-    <l-tile-layer v-if="openStreet" :url="mapUrl"></l-tile-layer>
+    <l-tile-layer :url="mapUrl" />
     <l-tile-layer v-if="openWeather" v-for="(url, index) in openWeatherTileUrls"
         :key="url"
         :url="url"
-    ></l-tile-layer>
+    />
 
     <l-control-attribution
         position="bottomright"
         :prefix="`
-            ${openStreet ? '<a href=https://www.openstreetmap.org/copyright>© OpenStreetMap contributors</a>' : ''}
-            ${ openStreet && openWeather ? ' | ' : ''}
-            ${ openWeather ? '<a href=https://openweathermap.org/>OpenWeather</a>' : ''}
+            ${ openStreet ? '<a href=https://www.openstreetmap.org/copyright>© OpenStreetMap contributors</a>' : '' }
+            ${ openStreet && openWeather ? ' | ' : '' }
+            ${ openWeather ? '<a href=https://openweathermap.org/>OpenWeather</a>' : '' }
         `"
-    ></l-control-attribution>
+    />
 
     <l-control v-if="openWeather" position="topright">
         <b-dropdown right :text="$t('active layers')" class="m-0 p-0" size="sm">
@@ -161,52 +161,29 @@ export default {
             default: 1.0
         },
 
-        // use OpenStreet map tiles (base map)
-        openStreet: {
-            type: Boolean,
-            required: false,
-            default: true
-        },
-
         // base map url
         mapUrl: {
             type: String,
-            required: function() {
-                return typeof this.$props.openStreet !== 'undefined' && this.$props.openStreet
-            },
-            default: function() {
-                return this.$props.openStreet ? 'http://{s}.tile.osm.org/{z}/{x}/{y}.png' : null
-            }
-        },
-
-        // use OpenWeather map tiles
-        openWeather: {
-            type: Boolean,
-            required: false,
-            default: false
-        },
-
-        // active OpenWeather map tiles
-        activeOpenWeatherLayers: {
-            type: Array,
-            required: function() {
-                return typeof this.$props.openWeather !== 'undefined' && this.$props.openWeather
-            }
-        },
-
-        openWeatherOptions: {
-            type: Array,
-            required: function() {
-                return typeof this.$props.openWeather !== 'undefined' && this.$props.openWeather
-            }
+            required: true,
+            default: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
         },
 
         // OpenWeather tiles urls
         openWeatherTileUrls: {
             type: Array,
-            required: function() {
-                return typeof this.$props.openWeather !== 'undefined' && this.$props.openWeather
-            }
+            required: false
+        },
+
+        // active OpenWeather map tiles
+        activeOpenWeatherLayers: {
+            type: Array,
+            required: false
+        },
+
+        // control box options for OpenWeather tiles
+        openWeatherOptions: {
+            type: Array,
+            required: false
         },
 
         // map markers data
@@ -218,7 +195,7 @@ export default {
         // popup charts data
         plotData: {
             type: Array,
-            required: true
+            required: false
         },
 
         activeCityPopup: {
@@ -228,24 +205,16 @@ export default {
         }
     },
 
-    data() {
-        return {
-        }
-    },
-
     methods: {
         zoomUpdated (zoom) {
-          //this.zoom = zoom;
           this.$emit('zoomUpdated', zoom);
         },
         
         centerUpdated (center) {
-          //this.center = center;
           this.$emit('centerUpdated', center);
         },
         
         boundsUpdated (bounds) {
-          //this.bounds = bounds;
           this.$emit('boundsUpdated', bounds);
         },
 
@@ -277,17 +246,6 @@ export default {
         }
     },
 
-    created() {
-        if(this.openWeather) {
-            if(window.localStorage.getItem('activeLayers')) { // load control panel options from local storage
-                this.activeLayers = JSON.parse(window.localStorage.getItem('activeLayers'))
-            }
-            else {
-                this.activeLayers = ['temp_new', 'clouds_new'] // default options
-            }
-        }
-    },
-
     computed: {
         iconOptions() {
             return this.calculateIconOptions()
@@ -302,6 +260,16 @@ export default {
             set: function(newValue) {
                 this.activeOpenWeatherLayersUpdated(newValue);
             }
+        },
+
+        openStreet() {
+            /* determines if OpenStreet map is used */
+            return this.mapUrl === 'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+        },
+
+        openWeather() {
+            /* determines if OpenWeather meteorological map is used */
+            return typeof this.$props.openWeatherTileUrls !== 'undefined' && this.openWeatherTileUrls.length
         }
     }
 };

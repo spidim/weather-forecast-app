@@ -32,8 +32,6 @@
                 :mapIconScale="iconScale"
                 :markerData="allCityData"
                 :plotData="chartData"
-                openStreet
-                openWeather
                 :openWeatherOptions="options"
                 :openWeatherTileUrls="owGenerateUrls"
                 :activeCityPopup="activeCityPopup"
@@ -113,6 +111,7 @@ export default {
 
     data () {
         return {
+            /* map url and options */
             mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
             zoom: 6,
             center: { lat: 38.436111, lng: 26.112442 },
@@ -121,10 +120,8 @@ export default {
 
             activeCityPopup: -1, // city id of displayed popup
           
-            //owLayers: [ 'temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new' ], // openweather tile layers
-          
-            options: [], // switch box options
-            activeLayers: [], // selected layers (temperature and clouds by default, checks 'activeLayers' item in localStorage on created()
+            options: [], // OpenWeather tiles switch box options
+            activeLayers: [], // selected OpenWeather tiles (temperature and clouds by default, checks 'activeLayers' item in localStorage on created()
         };
     },
 
@@ -133,6 +130,13 @@ export default {
         this.$store.dispatch('allCityData/setAllCityDataAsync');
 
         this.options = this.populateOptions();
+
+        if(window.localStorage.getItem('activeLayers')) { // load control panel options from local storage
+            this.activeLayers = JSON.parse(window.localStorage.getItem('activeLayers'))
+        }
+        else {
+            this.activeLayers = ['temp_new', 'clouds_new'] // default values
+        }
     },
 
     mounted() {
@@ -155,6 +159,7 @@ export default {
     methods: {
         populateOptions() {
         // switch box options
+        // available OpenWeather tiles: [ 'temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new' ], 
             return [
                 { text: this.$t('temperature'), value: 'temp_new'} ,
                 { text: this.$t('clouds'), value: 'clouds_new' },
