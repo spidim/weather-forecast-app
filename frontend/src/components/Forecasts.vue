@@ -36,27 +36,25 @@
                     small head-variant="light"
                     :items="forecastItems"
                     :fields="forecastFields"
+                    id="table"
                 >
-                    <!-- if selectedCity is set to an entry in allCityData -->
-                    <template v-if="selectedCity !== -1" v-slot:[translateTableKey()]="data">
-                        <!-- click city name to load plot -->
-                        <a href="" v-on:click="toggleShowPlot($event, data.value)">
-                            <!-- make selected city name bold, else regular -->
-                            <strong v-if="data.value === allCityData[selectedCity].name ||
-                                      ElToEnCityName(data.value) === allCityData[selectedCity].name"
+                    <template v-slot:[translateTableKey()]="data">
+                        <!-- clickable city name to load plot -->
+                        <a href="" v-on:click="selectedCity === -1 && scrollToRow(data.index); toggleShowPlot($event, data.value);">
+                            <!-- no city selected, render all without formatting -->
+                            <span v-if="selectedCity === -1">
+                                {{data.value}}
+                            </span>
+                            <!-- city selected, make selected city name bold -->
+                            <strong v-else-if="data.value === allCityData[selectedCity].name ||
+                                ElToEnCityName(data.value) === allCityData[selectedCity].name"
                             >
                                 {{ data.value }}
                             </strong>
+                            <!-- render not selected city names without formatting -->
                             <span v-else>
-                                {{ data.value }}
+                                {{data.value}}
                             </span>
-                        </a>
-                    </template>
-                    <!-- otherwise render city name without formatting -->
-                    <template v-else v-slot:[translateTableKey()]="data">
-                        <!-- click city name to load plot -->
-                        <a href="" v-on:click="toggleShowPlot($event, data.value)">
-                            {{ data.value }}
                         </a>
                     </template>
                 </b-table>
@@ -143,6 +141,11 @@ export default {
       translateTableKey() { // to overcome dynamic argument expression constraints (https://vuejs.org/v2/guide/syntax.html#Dynamic-Argument-Expression-Constraints)
           // tried passing an argument to the function too, it works but gives a warning
           return `cell(${this.$t('city')})`;
+      },
+      scrollToRow(index) {
+          let table = this.$el.querySelector("#table");
+          table.parentElement.style.height = this.selectedCity === -1 ? '25vh' : '70vh' // must find way to get updated height
+          table.parentElement.scrollTop = table.rows[0].clientHeight*index;
       }
   },
 
