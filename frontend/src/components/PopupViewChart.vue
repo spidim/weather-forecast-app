@@ -165,7 +165,7 @@ export default {
                 this.showToolbar = 0; // force hide toolbar
                 
                 let container = this.$el.querySelector("#container" + index); // contains the chart
-                if (event.target != container) { // check within container bounds
+                if (event.target != container) { // scroll image only when mouse pointer within container bounds
                     this.dragCoord.end.x = event.layerX;
                     this.dragCoord.end.y = event.layerY;
                     container.scrollLeft -= this.dragCoord.end.x - this.dragCoord.start.x;

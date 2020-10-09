@@ -14,14 +14,13 @@
     </b-alert>
 
     <b-row class="topinfo">
-        <b-col>
-        </b-col>
+        <b-col/>
     </b-row>
 
     <!-- display map -->
     <b-row>
-        <b-col>
-        </b-col>
+        <b-col/>
+
         <b-col cols=10>
             <GeneralMap
                 height="80vh"
@@ -31,7 +30,7 @@
                 :mapUrl="mapUrl"
                 :mapIconScale="iconScale"
                 :markerData="allCityData"
-                :plotData="chartData"
+                :chartData="chartData"
                 :openWeatherOptions="options"
                 :openWeatherTileUrls="owGenerateUrls"
                 :activeCityPopup="activeCityPopup"
@@ -44,19 +43,16 @@
             /><!-- alternatively update data member directly (e.g. zoom = value) -->
         </b-col>
 
-        <b-col>
-        </b-col>
+        <b-col/>
     </b-row>
 
     <b-row class="pt-1">
-        <b-col>
-        </b-col>
+        <b-col/>
     </b-row>
 
     <!-- display center, zoom, bounds tags -->
     <b-row align-v="end" class="pb-0 mb-0">
-        <b-col>
-        </b-col>
+        <b-col/>
 
         <b-col cols=2>
             <span><strong>{{$t('center')}}</strong></span>
@@ -70,14 +66,12 @@
             <span><strong>{{$t('bounds')}}</strong></span>
         </b-col>
 
-        <b-col>
-        </b-col>
+        <b-col/>
     </b-row>
 
     <!-- display center, zoom, bounds values -->
     <b-row align-v="start" class="pt-0 mt-0">
-        <b-col>
-        </b-col>
+        <b-col/>
 
         <b-col cols=2>
             <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ centerSimple }}</span>
@@ -91,8 +85,7 @@
             <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ boundsSimple }}</span>
         </b-col>
 
-        <b-col>
-        </b-col>
+        <b-col/>
     </b-row>
 
 </b-container>
