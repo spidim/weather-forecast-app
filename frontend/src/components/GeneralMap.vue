@@ -26,11 +26,7 @@
 
     <l-control-attribution
         position="bottomright"
-        :prefix="`
-            ${ openStreet ? '<a href=https://www.openstreetmap.org/copyright>© OpenStreetMap contributors</a>' : '' }
-            ${ openStreet && openWeather ? ' | ' : '' }
-            ${ openWeather ? '<a href=https://openweathermap.org/>OpenWeather</a>' : '' }
-        `"
+        :prefix="attribution"
     />
 
     <l-control v-if="openWeather" position="topright">
@@ -73,7 +69,7 @@
             }"
         >
             <PopupViewChart
-                :chartData="plotData[index]"
+                :chartData="chartData[index]"
                 :active="activeCityPopup === city.id"
                 :ref="index"
             >
@@ -189,13 +185,13 @@ export default {
         // map markers data
         markerData: {
             type: Array,
-            required: false
+            required: true
         },
 
         // popup charts data
-        plotData: {
+        chartData: {
             type: Array,
-            required: false
+            required: true
         },
 
         activeCityPopup: {
@@ -234,6 +230,7 @@ export default {
         },
         
         resetZoom(cityIndex) {
+            /* resets zoom for all tabs of popup */
             this.$refs[cityIndex][0].reset([0,1,2])
         },
         
@@ -269,7 +266,16 @@ export default {
 
         openWeather() {
             /* determines if OpenWeather meteorological map is used */
-            return typeof this.$props.openWeatherTileUrls !== 'undefined' && this.openWeatherTileUrls.length
+            return typeof this.$props.openWeatherTileUrls !== 'undefined'
+        },
+
+        attribution() {
+            /* generates map attribution string */
+            return `
+                ${ this.openStreet ? '<a href=https://www.openstreetmap.org/copyright>© OpenStreetMap contributors</a>' : '' }
+                ${ this.openStreet && this.openWeather ? ' | ' : '' }
+                ${ this.openWeather ? '<a href=https://openweathermap.org/>OpenWeather</a>' : '' }
+            `
         }
     }
 };
