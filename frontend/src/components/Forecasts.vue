@@ -28,7 +28,7 @@
             <b-col class="p-3">{{ tableTitle }}</b-col>
         </b-row>
         <b-row md="12" class="mt-4">
-            <b-col class="">
+            <b-col>
                 <!-- forecasts table renders only if allCityData is populated -->
                 <b-table v-if="allCityData && allCityData.length"
                     striped hover borderless sticky-header
@@ -40,7 +40,7 @@
                 >
                     <template v-slot:[translateTableKey()]="data">
                         <!-- clickable city name to load plot -->
-                        <a href="" v-on:click="selectedCity === -1 && scrollToRow(data.index); toggleShowPlot($event, data.value);">
+                        <a href="" v-on:click.prevent="selectedCity === -1 && scrollToRow(data.index); toggleShowPlot(data.value);">
                             <!-- no city selected, render all without formatting -->
                             <span v-if="selectedCity === -1">
                                 {{data.value}}
@@ -51,7 +51,7 @@
                             >
                                 {{ data.value }}
                             </strong>
-                            <!-- render not selected city names without formatting -->
+                            <!-- city selected, render not selected city names without formatting -->
                             <span v-else>
                                 {{data.value}}
                             </span>
@@ -67,8 +67,8 @@
             <b-row class="text-center">
                 <b-col>
                     <!-- plot timeline duration control -->
-                    <b-form-spinbutton id="endHours" :value="endHours" min="1" max="48" size="sm" inline @change="endHours = $event">
-                    </b-form-spinbutton>
+                    <b-form-spinbutton id="endHours" :value="endHours" min="1" max="48" size="sm" inline @change="endHours = $event"
+                    />
                     <span>{{ $t('hours') }}</span>
                 </b-col>
                 <b-col cols="8">
@@ -78,10 +78,10 @@
                 </b-col>
                 <b-col>
                     <!-- container close button -->
-                    <b-button-close @click="selectedCity = -1"></b-button-close>
+                    <b-button-close @click="selectedCity = -1; scrollToRow(0);" />
                 </b-col>
             </b-row>
-            <LineChart :chart-data="prepareDataset(endHours, selectedVar)"></LineChart>
+            <LineChart :chart-data="prepareDataset(endHours, selectedVar)" />
         </b-container>
     </b-container>
 </div>
@@ -117,10 +117,8 @@ export default {
   },
 
   methods: {
-      toggleShowPlot (event, cityName) {
+      toggleShowPlot (cityName) {
       /* load plot for cityName */
-          event.preventDefault();
-
           this.selectedCity = this.allCityData.findIndex(city =>
               (
                   city.name === (this.$i18n.locale === 'el'
@@ -144,8 +142,8 @@ export default {
       },
       scrollToRow(index) {
           let table = this.$el.querySelector("#table");
-          table.parentElement.style.height = this.selectedCity === -1 ? '25vh' : '70vh' // must find way to get updated height
-          table.parentElement.scrollTop = table.rows[0].clientHeight*index;
+          table.parentElement.style.height = this.selectedCity === -1 ? '25vh' : '70vh'; // must find way to get updated height
+          table.parentElement.scrollTop = table.rows[0].clientHeight * index + table.tHead.clientHeight < table.parentElement.clientHeight ? 0 : table.rows[0].clientHeight * index;
       }
   },
 
@@ -206,7 +204,7 @@ export default {
   
   created() {
       console.log('Load our data first');
-      this.$store.dispatch('allCityData/setAllCityDataAsync')
+      this.$store.dispatch('allCityData/setAllCityDataAsync');
   }
 }
 </script>
