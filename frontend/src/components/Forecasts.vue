@@ -30,34 +30,18 @@
         <b-row md="12" class="mt-4">
             <b-col>
                 <!-- forecasts table renders only if allCityData is populated -->
-                <b-table v-if="allCityData && allCityData.length"
-                    striped hover borderless sticky-header
-                    :style="{height: (selectedCity !== -1 ? '25vh' : '70vh')}"
-                    small head-variant="light"
-                    :items="forecastItems"
-                    :fields="forecastFields"
+                <Table v-if="allCityData && allCityData.length"
+                    :tableData="allCityData"
+                    :tableItems="forecastItems"
+                    :tableFields="forecastFields"
+                    :selectedRow="selectedCity"
+                    :reverseTranslationFunction="translate"
+                    :tableStyle="{height: (selectedCity !== -1 ? '25vh' : '70vh')}"
+                    @selectedRowUpdate="(index, value) => { $emit('selectedRowUpdate', index, value) }"
+                    @sortingChanged="value => { $emit('sortingChanged', value) }"
+                    ref="table"
                     id="table"
-                >
-                    <template v-slot:[translateTableKey()]="data">
-                        <!-- clickable city name to load plot -->
-                        <a href="" v-on:click.prevent="selectedCity === -1 && scrollToRow(data.index); toggleShowPlot(data.value);">
-                            <!-- no city selected, render all without formatting -->
-                            <span v-if="selectedCity === -1">
-                                {{data.value}}
-                            </span>
-                            <!-- city selected, make selected city name bold -->
-                            <strong v-else-if="data.value === allCityData[selectedCity].name ||
-                                ElToEnCityName(data.value) === allCityData[selectedCity].name"
-                            >
-                                {{ data.value }}
-                            </strong>
-                            <!-- city selected, render not selected city names without formatting -->
-                            <span v-else>
-                                {{data.value}}
-                            </span>
-                        </a>
-                    </template>
-                </b-table>
+                />
                 <!-- otherwise display no forecasts message -->
                 <h3 v-else>{{ $t('no forecasts') }}</h3>
             </b-col>
@@ -78,7 +62,7 @@
                 </b-col>
                 <b-col>
                     <!-- container close button -->
-                    <b-button-close @click="selectedCity = -1; scrollToRow(0);" />
+                    <b-button-close @click="selectedCity = -1;" />
                 </b-col>
             </b-row>
             <LineChart :chart-data="prepareDataset(endHours, selectedVar)" />
@@ -93,6 +77,7 @@ import Modal from './Modal.vue'
 import LineChart from './LineChart.vue'
 import { ElToEnCityName } from '../lang/cityName' // used to translate greek city names back to english
 import { mapGetters } from 'vuex'
+import Table from './Table.vue'
 
 export default {
   name: 'Forecasts',
@@ -106,17 +91,25 @@ export default {
           infoModalId: "infoModal1",
           selectedVar: 'temperature',
           selectedCity: -1, // index of city in allCityData
-          endHours: 48 // timeline duration in hours for plot
+          endHours: 48, // timeline duration in hours for plot
+          tableSorted: null // forecasts table is sorted (null: no, true: desc, false: asc)
       }
   },
 
   components: {
       Controls,
       Modal,
-      LineChart
+      LineChart,
+      Table
   },
 
   methods: {
+      translate(cityName) {
+          return this.$i18n.locale === 'el'
+              ? this.ElToEnCityName(cityName) // translate city name back to English, otherwise no match (because allCityData does not get translated!)
+              : cityName
+      },
+
       toggleShowPlot (cityName) {
       /* load plot for cityName */
           this.selectedCity = this.allCityData.findIndex(city =>
@@ -128,6 +121,7 @@ export default {
               )
           )
       },
+
       prepareDataset: function (endHours, variable) {
       /* prepares dataset for plot */
           let chartdata = this.chartData[this.selectedCity].variables[this.selectedVar] // get selected variable measurements
@@ -135,15 +129,6 @@ export default {
           chartdata = {...chartdata, labels: chartdata.labels.slice(0, endHours)} // x-axis points for endHours hours
 
           return chartdata
-      },
-      translateTableKey() { // to overcome dynamic argument expression constraints (https://vuejs.org/v2/guide/syntax.html#Dynamic-Argument-Expression-Constraints)
-          // tried passing an argument to the function too, it works but gives a warning
-          return `cell(${this.$t('city')})`;
-      },
-      scrollToRow(index) {
-          let table = this.$el.querySelector("#table");
-          table.parentElement.style.height = this.selectedCity === -1 ? '25vh' : '70vh'; // must find way to get updated height
-          table.parentElement.scrollTop = table.rows[0].clientHeight * index + table.tHead.clientHeight < table.parentElement.clientHeight ? 0 : table.rows[0].clientHeight * index;
       }
   },
 
@@ -163,6 +148,7 @@ export default {
           });
           return data_for_table;
       },
+
       forecastFields: function () {
           var currentDate = new Date(); // correct if we have fresh data, otherwise we should read start date from allCityData
           var options = { weekday: 'short', hour: '2-digit'};
@@ -186,6 +172,7 @@ export default {
           }
         return fields;
       },
+
       tableTitle: function () {
           let unit_map = {
               "temperature" : "\u2103",
@@ -194,17 +181,52 @@ export default {
           };
           return `${this.$t(this.selectedVar)} ${this.$t('in')} ${unit_map[this.selectedVar]}`;
       },
+
+      sortedNames() { // sorted city names according to locale
+          return this.allCityData.map( row => this.$t(row.name.toLowerCase()) ).sort(
+              (a, b) => {
+                  if(this.tableSorted)
+                      return b >= a;
+                  else
+                      return b < a;
+              }
+          );
+      },
+
       ...mapGetters({
           allCityData: 'allCityData/getAllCityData'
       }),
+
       ...mapGetters({
           chartData: 'chartData/getChartData'
       })
+  },
+
+  watch: {
+      selectedCity(newValue, oldValue) {
+          if (newValue === -1) { // plot is closed
+              this.$refs.table.scrollToRow(0);
+          }
+          else if (oldValue === -1) { // plot is opened
+              if(this.tableSorted !== null) { // look for selected city index in sorted table
+                 let found = this.sortedNames.findIndex(name => this.translate(name) === this.allCityData[this.selectedCity].name);
+                 this.$refs.table.scrollToRow(found);
+              }
+              else {
+                  this.$refs.table.scrollToRow(newValue);
+              }
+          }
+      }
   },
   
   created() {
       console.log('Load our data first');
       this.$store.dispatch('allCityData/setAllCityDataAsync');
+      this.$on('selectedRowUpdate', (index, value) => {
+            this.selectedCity = index;
+            this.toggleShowPlot(value);
+      });
+      this.$on('sortingChanged', value => { this.tableSorted = value; });
   }
 }
 </script>
