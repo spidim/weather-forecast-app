@@ -1,5 +1,5 @@
 <template>
-<b-table v-if="tableData && tableData.length"
+<b-table v-if="forecastData && forecastData.length"
     striped hover borderless sticky-header
     :style="tableStyle"
     small head-variant="light"
@@ -18,8 +18,8 @@
                 {{ data.value }}
             </span>
             <!-- city selected, make selected city name bold -->
-            <strong v-else-if="data.value === tableData[selectedRow].name ||
-                reverseTranslationFunction(data.value) === tableData[selectedRow].name"
+            <strong v-else-if="data.value === forecastData[selectedRow].name ||
+                reverseTranslationFunction(data.value) === forecastData[selectedRow].name"
             >
                 {{ data.value }}
             </strong>
@@ -37,7 +37,7 @@ export default {
 	name: 'Table',
 
 	props: {
-		tableData: {
+		forecastData: {
 			type: Array,
 			required: true
 		},
@@ -90,8 +90,14 @@ export default {
 
 		scrollToRow(index) {
           	let table = this.$el.querySelector("#table");
-          	table.parentElement.style.height = this.selectedRow === -1 ? '25vh' : '70vh'; // must find way to get updated height
-          	table.parentElement.scrollTop = table.rows[0].clientHeight * index + table.tHead.clientHeight < table.parentElement.clientHeight ? 0 : table.rows[0].clientHeight * index;
+          	table.parentElement.style.height = '25vh';
+      		if(this.selectedRow === -1) { // first scroll on table shrink
+      			// do not scroll from 1st "page" if not necessary
+      			table.parentElement.scrollTop = table.rows[0].clientHeight * index + table.tHead.clientHeight < table.parentElement.clientHeight ? 0 : table.rows[0].clientHeight * index;
+      		}
+      		else { // scroll while table shrinked
+      			table.parentElement.scrollTop = table.rows[0].clientHeight * index;
+      		}
       }
 	}
 }
