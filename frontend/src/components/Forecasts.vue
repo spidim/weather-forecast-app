@@ -31,12 +31,12 @@
             <b-col>
                 <!-- forecasts table renders only if allCityData is populated -->
                 <Table v-if="allCityData && allCityData.length"
-                    :tableData="allCityData"
+                    :forecastData="allCityData"
                     :tableItems="forecastItems"
                     :tableFields="forecastFields"
                     :selectedRow="selectedCity"
                     :reverseTranslationFunction="translate"
-                    :tableStyle="{height: (selectedCity !== -1 ? '25vh' : '70vh')}"
+                    :tableStyle="{ height: (selectedCity !== -1 ? '25vh' : '70vh') }"
                     @selectedRowUpdate="(index, value) => { $emit('selectedRowUpdate', index, value) }"
                     @sortingChanged="value => { $emit('sortingChanged', value) }"
                     ref="table"
@@ -65,7 +65,7 @@
                     <b-button-close @click="selectedCity = -1;" />
                 </b-col>
             </b-row>
-            <LineChart :chart-data="prepareDataset(endHours, selectedVar)" />
+            <LineChart :chart-data="preparePlotData(endHours, selectedVar)" />
         </b-container>
     </b-container>
 </div>
@@ -105,35 +105,39 @@ export default {
 
   methods: {
       translate(cityName) {
+      /* translates city name according to active app locale */
           return this.$i18n.locale === 'el'
               ? this.ElToEnCityName(cityName) // translate city name back to English, otherwise no match (because allCityData does not get translated!)
               : cityName
       },
 
-      toggleShowPlot (cityName) {
-      /* load plot for cityName */
-          this.selectedCity = this.allCityData.findIndex(city =>
+      findCityIndex (cityName) {
+      /* find city index */
+          return this.allCityData.findIndex(city =>
               (
-                  city.name === (this.$i18n.locale === 'el'
-                      ? this.ElToEnCityName(cityName) // translate city name back to English, otherwise no match (because allCityData does not get translated!)
-                      : cityName
-                  )
+                  city.name === this.translate(cityName)
               )
           )
       },
 
-      prepareDataset: function (endHours, variable) {
+      preparePlotData: function (endHours, variable) {
       /* prepares dataset for plot */
           let chartdata = this.chartData[this.selectedCity].variables[this.selectedVar] // get selected variable measurements
           delete chartdata.title // remove plot title
           chartdata = {...chartdata, labels: chartdata.labels.slice(0, endHours)} // x-axis points for endHours hours
 
           return chartdata
+      },
+
+      findSelectedCityIndexSorted() {
+      /* return selected city index in sorted names table */
+          return this.sortedNames.findIndex(name => this.translate(name) === this.allCityData[this.selectedCity].name);
       }
   },
 
   computed: {
       forecastItems: function () {
+      /* prepares table rows */
           let data_for_table = [];
           this.allCityData.forEach(city => {
               var curr_data = {
@@ -150,6 +154,7 @@ export default {
       },
 
       forecastFields: function () {
+      /* prepares table fields (i.e. column names) */
           var currentDate = new Date(); // correct if we have fresh data, otherwise we should read start date from allCityData
           var options = { weekday: 'short', hour: '2-digit'};
           var fields = [
@@ -182,7 +187,8 @@ export default {
           return `${this.$t(this.selectedVar)} ${this.$t('in')} ${unit_map[this.selectedVar]}`;
       },
 
-      sortedNames() { // sorted city names according to locale
+      sortedNames() {
+      /* sorted city names according to locale */
           return this.allCityData.map( row => this.$t(row.name.toLowerCase()) ).sort(
               (a, b) => {
                   if(this.tableSorted)
@@ -208,13 +214,18 @@ export default {
               this.$refs.table.scrollToRow(0);
           }
           else if (oldValue === -1) { // plot is opened
-              if(this.tableSorted !== null) { // look for selected city index in sorted table
-                 let found = this.sortedNames.findIndex(name => this.translate(name) === this.allCityData[this.selectedCity].name);
-                 this.$refs.table.scrollToRow(found);
-              }
-              else {
+              if (this.tableSorted === null) { // index from unsorted table
                   this.$refs.table.scrollToRow(newValue);
               }
+              else {
+                  this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());
+              }
+          }
+      },
+
+      tableSorted(newValue, oldValue) {
+          if(this.selectedCity !== -1) { // scroll table to follow selected city
+              this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());
           }
       }
   },
@@ -222,10 +233,7 @@ export default {
   created() {
       console.log('Load our data first');
       this.$store.dispatch('allCityData/setAllCityDataAsync');
-      this.$on('selectedRowUpdate', (index, value) => {
-            this.selectedCity = index;
-            this.toggleShowPlot(value);
-      });
+      this.$on('selectedRowUpdate', (index, value) => { this.selectedCity = this.findCityIndex(value); });
       this.$on('sortingChanged', value => { this.tableSorted = value; });
   }
 }
