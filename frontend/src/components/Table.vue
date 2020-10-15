@@ -1,8 +1,8 @@
 <template>
 <b-table v-if="forecastData && forecastData.length"
     striped hover borderless sticky-header
-    :style="tableStyle"
     small head-variant="light"
+    :style="tableStyle"
     :items="tableItems"
     :fields="tableFields"
     @sort-changed="sortingChanged"
@@ -42,12 +42,12 @@ export default {
 			required: true
 		},
 
-		tableItems: {
+		tableItems: { // table rows
 			type: Array,
 			required: true
 		},
 
-		tableFields: {
+		tableFields: { // table fields
 			type: Array,
 			required: true
 		},
@@ -58,12 +58,15 @@ export default {
 			default: -1
 		},
 
-		tableStyle: {
+		tableStyle: { // css styling for table
 			type: Object,
-			required: false
+			required: false,
+			default: function() {
+				return { height: '70vh' };
+			}
 		},
 
-		reverseTranslationFunction: {
+		reverseTranslationFunction: { // translates city names from el to en
 			type: Function,
 			required: false,
 			default: function(name) {
@@ -74,8 +77,6 @@ export default {
 
 	methods: {
 		sortingChanged(ctx) {
-      		// ctx.sortBy   ==> Field key for sorting by (or null for no sorting)
-      		// ctx.sortDesc ==> true if sorting descending, false otherwise
       		this.$emit('sortingChanged', ctx.sortDesc);
     	},
 
@@ -90,7 +91,7 @@ export default {
 
 		scrollToRow(index) {
           	let table = this.$el.querySelector("#table");
-          	table.parentElement.style.height = '25vh';
+          	table.parentElement.style.height = this.tableStyle.height;
       		if(this.selectedRow === -1) { // first scroll on table shrink
       			// do not scroll from 1st "page" if not necessary
       			table.parentElement.scrollTop = table.rows[0].clientHeight * index + table.tHead.clientHeight < table.parentElement.clientHeight ? 0 : table.rows[0].clientHeight * index;
@@ -98,7 +99,7 @@ export default {
       		else { // scroll while table shrinked
       			table.parentElement.scrollTop = table.rows[0].clientHeight * index;
       		}
-      }
+      	}
 	}
 }
 </script>

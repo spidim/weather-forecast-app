@@ -36,7 +36,7 @@
                     :tableFields="forecastFields"
                     :selectedRow="selectedCity"
                     :reverseTranslationFunction="translate"
-                    :tableStyle="{ height: (selectedCity !== -1 ? '25vh' : '70vh') }"
+                    :tableStyle="tableStyle"
                     @selectedRowUpdate="(index, value) => { $emit('selectedRowUpdate', index, value) }"
                     @sortingChanged="value => { $emit('sortingChanged', value) }"
                     ref="table"
@@ -92,7 +92,8 @@ export default {
           selectedVar: 'temperature',
           selectedCity: -1, // index of city in allCityData
           endHours: 48, // timeline duration in hours for plot
-          tableSorted: null // forecasts table is sorted (null: no, true: desc, false: asc)
+          tableSorted: null, // forecasts table is sorted (null: no, true: desc, false: asc)
+          tableStyle: { height: '70vh' } // table css styling
       }
   },
 
@@ -210,6 +211,8 @@ export default {
 
   watch: {
       selectedCity(newValue, oldValue) {
+          this.tableStyle.height = newValue === -1 ? '70vh' : '25vh';
+          
           if (newValue === -1) { // plot is closed
               this.$refs.table.scrollToRow(0);
           }
