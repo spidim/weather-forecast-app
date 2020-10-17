@@ -40,7 +40,6 @@
                     @selectedRowUpdate="(index, value) => { $emit('selectedRowUpdate', index, value) }"
                     @sortingChanged="value => { $emit('sortingChanged', value) }"
                     ref="table"
-                    id="table"
                 />
                 <!-- otherwise display no forecasts message -->
                 <h3 v-else>{{ $t('no forecasts') }}</h3>
@@ -132,7 +131,7 @@ export default {
 
       findSelectedCityIndexSorted() {
       /* return selected city index in sorted names table */
-          return this.sortedNames.findIndex(name => this.translate(name) === this.allCityData[this.selectedCity].name);
+          return this.sortedCityNames.findIndex(name => this.translate(name) === this.allCityData[this.selectedCity].name);
       }
   },
 
@@ -188,7 +187,7 @@ export default {
           return `${this.$t(this.selectedVar)} ${this.$t('in')} ${unit_map[this.selectedVar]}`;
       },
 
-      sortedNames() {
+      sortedCityNames() {
       /* sorted city names according to locale */
           return this.allCityData.map( row => this.$t(row.name.toLowerCase()) ).sort(
               (a, b) => {
@@ -206,6 +205,10 @@ export default {
 
       ...mapGetters({
           chartData: 'chartData/getChartData'
+      }),
+
+      ...mapGetters({
+          locale: 'locale/getLocale'
       })
   },
 
@@ -229,6 +232,12 @@ export default {
       tableSorted(newValue, oldValue) {
           if(this.selectedCity !== -1) { // scroll table to follow selected city
               this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());
+          }
+      },
+
+      locale(newValue, oldValue) {
+          if(this.tableSorted) { // scroll table to correct selected city row when table is sorted
+              this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());   
           }
       }
   },
