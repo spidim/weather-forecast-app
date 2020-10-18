@@ -5,6 +5,8 @@
     :style="tableStyle"
     :items="tableItems"
     :fields="tableFields"
+    :sort-by="sortBy"
+    :sort-desc="sortDesc"
     @sort-changed="sortingChanged"
     id="table"
 >
@@ -34,7 +36,7 @@
 
 <script>
 export default {
-	name: 'Table',
+	name: 'ForecastsTable',
 
 	props: {
 		forecastData: {
@@ -50,6 +52,18 @@ export default {
 		tableFields: { // table fields
 			type: Array,
 			required: true
+		},
+
+		sortBy: { // table field name to sort by
+			type: String,
+			required: false,
+			default: null
+		},
+
+		sortDesc: { // sort direction (true: desc, false: asc, null: none)
+			type: Boolean,
+			required: false,
+			default: null
 		},
 
 		selectedRow: {
@@ -77,7 +91,7 @@ export default {
 
 	methods: {
 		sortingChanged(ctx) {
-      		this.$emit('sortingChanged', ctx.sortDesc);
+      		this.$emit('sortingChanged', ctx);
     	},
 
 		selectedRowUpdate(index, value) {

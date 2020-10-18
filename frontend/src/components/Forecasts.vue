@@ -30,11 +30,13 @@
         <b-row md="12" class="mt-4">
             <b-col>
                 <!-- forecasts table renders only if allCityData is populated -->
-                <Table v-if="allCityData && allCityData.length"
+                <ForecastsTable v-if="allCityData && allCityData.length"
                     :forecastData="allCityData"
                     :tableItems="forecastItems"
                     :tableFields="forecastFields"
                     :selectedRow="selectedCity"
+                    :sortBy="tableSortBy"
+                    :sortDesc="tableSorted"
                     :reverseTranslationFunction="translate"
                     :tableStyle="tableStyle"
                     @selectedRowUpdate="(index, value) => { $emit('selectedRowUpdate', index, value) }"
@@ -76,7 +78,7 @@ import Modal from './Modal.vue'
 import LineChart from './LineChart.vue'
 import { ElToEnCityName } from '../lang/cityName' // used to translate greek city names back to english
 import { mapGetters } from 'vuex'
-import Table from './Table.vue'
+import ForecastsTable from './ForecastsTable.vue'
 
 export default {
   name: 'Forecasts',
@@ -91,6 +93,7 @@ export default {
           selectedVar: 'temperature',
           selectedCity: -1, // index of city in allCityData
           endHours: 48, // timeline duration in hours for plot
+          tableSortBy: null, // field name to sort forecasts table by
           tableSorted: null, // forecasts table is sorted (null: no, true: desc, false: asc)
           tableStyle: { height: '70vh' } // table css styling
       }
@@ -100,7 +103,7 @@ export default {
       Controls,
       Modal,
       LineChart,
-      Table
+      ForecastsTable
   },
 
   methods: {
@@ -220,8 +223,8 @@ export default {
               this.$refs.table.scrollToRow(0);
           }
           else if (oldValue === -1) { // plot is opened
-              if (this.tableSorted === null) { // index from unsorted table
-                  this.$refs.table.scrollToRow(newValue);
+              if (this.tableSorted === null) {
+                  this.$refs.table.scrollToRow(newValue); // scroll to index directly
               }
               else {
                   this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());
@@ -236,7 +239,8 @@ export default {
       },
 
       locale(newValue, oldValue) {
-          if(this.tableSorted) { // scroll table to correct selected city row when table is sorted
+          this.tableSortBy = this.$t('city'); // translate sort key
+          if(this.tableSorted !== null && this.selectedCity !== -1) { // scroll table to correct selected city row when table is sorted
               this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());   
           }
       }
@@ -246,7 +250,10 @@ export default {
       console.log('Load our data first');
       this.$store.dispatch('allCityData/setAllCityDataAsync');
       this.$on('selectedRowUpdate', (index, value) => { this.selectedCity = this.findCityIndex(value); });
-      this.$on('sortingChanged', value => { this.tableSorted = value; });
+      this.$on('sortingChanged', ({ sortBy, sortDesc }) => {
+          this.tableSortBy = sortBy;
+          this.tableSorted = sortDesc;
+      });
   }
 }
 </script>
