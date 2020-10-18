@@ -239,9 +239,9 @@ export default {
       },
 
       locale(newValue, oldValue) {
-          this.tableSortBy = this.$t('city'); // translate sort key
-          if(this.tableSorted !== null && this.selectedCity !== -1) { // scroll table to correct selected city row when table is sorted
-              this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());   
+          if(this.tableSorted !== null && this.selectedCity !== -1) {
+              this.tableSortBy = this.$t('city'); // translate sort key
+              this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted()); // scroll table to correct selected city row when table is sorted
           }
       }
   },
