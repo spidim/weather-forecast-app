@@ -8,8 +8,21 @@
     :sort-by="sortBy"
     :sort-desc="sortDesc"
     @sort-changed="sortingChanged"
+    @row-contextmenu="(item, index, event) => { event.preventDefault() }"
     id="table"
 >
+	<template v-slot:head()="data"><!-- header custom rendering-->
+		<!-- on sortable field, clear sorting on right click and prevent context menu -->
+		<span v-if="data.field.sortable"
+			@click.right.prevent="sortingChanged({ sortBy: null, sortDesc: null })"
+		>
+			{{ data.label }}
+		</span>
+		<!-- on regular field, disable right click context menu -->
+    	<span v-else @click.right.prevent>
+    		{{ data.label }}
+    	</span>
+    </template>
     <template v-slot:[translateTableKey()]="data">
         <!-- clickable city name to load plot -->
         <a href="" 
