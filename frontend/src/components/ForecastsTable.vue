@@ -8,7 +8,7 @@
     :sort-by="sortBy"
     :sort-desc="sortDesc"
     @sort-changed="sortingChanged"
-    @row-contextmenu="(item, index, event) => { event.preventDefault() }"
+    @click.native.right.prevent
     id="table"
 >
 	<template v-slot:head()="data"><!-- header custom rendering-->
