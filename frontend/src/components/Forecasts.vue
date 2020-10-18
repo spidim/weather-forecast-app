@@ -233,8 +233,11 @@ export default {
       },
 
       tableSorted(newValue, oldValue) {
-          if(this.selectedCity !== -1) { // scroll table to follow selected city
+          if(this.selectedCity !== -1) { // scroll sorted table to follow selected city
               this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());
+          }
+          if(newValue === null) { // scroll unsorted table to follow selected city
+              this.$refs.table.scrollToRow(this.selectedCity);
           }
       },
 
