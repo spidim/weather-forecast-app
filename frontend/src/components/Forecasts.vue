@@ -241,12 +241,12 @@ export default {
           }
       },
 
-      locale(newValue, oldValue) {
+      locale() {
           if(this.tableSortBy) {
               this.tableSortBy = this.$t('city'); // translate sort key
-          }
-          if(this.selectedCity !== -1) {
-              this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted()); // scroll table to correct selected city row when table is sorted
+              if(this.selectedCity !== -1) {
+                  this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted()); // scroll table to correct selected city row when table is sorted
+              }
           }
       }
   },
