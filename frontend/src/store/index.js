@@ -23,6 +23,7 @@ Vue.set(store, 'i18n', i18n) // expose i18n to store as 'store.i18n'
 store.watch(
 	(state, getters) => getters['locale/getLocale'], // when locale changes
 	() => {
+		store.dispatch('allCityData/translateCityNames'); // add city names translation
 		store.dispatch('chartData/generateChartData', store.getters['allCityData/getAllCityData']); // generate plot data
 		if (debug) {
 			console.log(`Plot data generated on ${new Date(Date.now())}`);

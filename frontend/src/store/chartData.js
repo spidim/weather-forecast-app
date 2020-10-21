@@ -1,4 +1,4 @@
-import store from './' // just for store.i18n services
+import store from './'
 /*
   chartData Schema
   ----------------
@@ -46,16 +46,12 @@ const generateData = (state, source) => {
 					locale: store.i18n.locale,
 		    		variable: store.i18n.t(variable), // pass selected variable name
 		    		labels: labels,
-		    		title: store.i18n.locale === 'el'
-		            	? store.i18n.t(city.name.toLowerCase())
-		            	: city.name,
+		    		title: city.translatedName,
 		    		datasets: [{
 		           		fill: false,
 		           		tension: 0,
 		           		borderColor: "#80b6f4", // if more than one datasets, color should be set randomly or left to chart.js to decide
-		           		label: store.i18n.locale === 'el' // translate city name on label
-		               		? store.i18n.t(city.name.toLowerCase())
-		               		: city.name,
+		           		label: city.translatedName,
 		           		data: data
 		        	}]
 				}

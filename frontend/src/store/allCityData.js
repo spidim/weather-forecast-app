@@ -33,6 +33,7 @@ const actions = {
 		}
 
 		initDataOnMap();
+		context.commit('translateCityNames');
 	}
 }
 
@@ -43,6 +44,15 @@ const mutations = {
 
 	setLastFetch: (state, datetime) => {
 		state.lastFetch = datetime
+	},
+
+	translateCityNames: (state) => {
+		state.allCityData = state.allCityData.map(city => {
+			return {
+				...city,
+				translatedName: store.i18n.t(city.name.toLowerCase())
+			}
+		})
 	}
 }
 
