@@ -75,16 +75,11 @@
 import Controls from './Controls.vue'
 import Modal from './Modal.vue'
 import LineChart from './LineChart.vue'
-import { ElToEnCityName } from '../lang/cityName' // used to translate greek city names back to english
 import { mapGetters } from 'vuex'
 import ForecastsTable from './ForecastsTable.vue'
 
 export default {
   name: 'Forecasts',
-  
-  mixins: [{
-      methods: { ElToEnCityName }
-  }],
 
   data() {
       return {
