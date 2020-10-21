@@ -37,7 +37,6 @@
                     :selectedRow="selectedCity"
                     :sortBy="tableSortBy"
                     :sortDesc="tableSorted"
-                    :reverseTranslationFunction="translate"
                     :tableStyle="tableStyle"
                     @selectedRowUpdate="(index, value) => { $emit('selectedRowUpdate', index, value) }"
                     @sortingChanged="value => { $emit('sortingChanged', value) }"
@@ -107,18 +106,11 @@ export default {
   },
 
   methods: {
-      translate(cityName) {
-      /* translates city name according to active app locale */
-          return this.$i18n.locale === 'el'
-              ? this.ElToEnCityName(cityName) // translate city name back to English, otherwise no match (because allCityData does not get translated!)
-              : cityName
-      },
-
       findCityIndex (cityName) {
       /* find city index */
           return this.allCityData.findIndex(city =>
               (
-                  city.name === this.translate(cityName)
+                  city.translatedName === cityName
               )
           )
       },
@@ -134,7 +126,7 @@ export default {
 
       findSelectedCityIndexSorted() {
       /* return selected city index in sorted names table */
-          return this.sortedCityNames.findIndex(name => this.translate(name) === this.allCityData[this.selectedCity].name);
+          return this.sortedCityNames.findIndex(name => name === this.allCityData[this.selectedCity].translatedName);
       }
   },
 
@@ -192,7 +184,7 @@ export default {
 
       sortedCityNames() {
       /* sorted city names according to locale */
-          return this.allCityData.map( row => this.$t(row.name.toLowerCase()) ).sort(
+          return this.allCityData.map(row => row.translatedName).sort(
               (a, b) => {
                   if(this.tableSorted)
                       return b >= a;

@@ -60,7 +60,7 @@
                 opacity: activeCityPopup !== city.id ? 0.9 : 0 // hide active city popup tooltip
             }"
         >
-            {{ $t(city.name.toLowerCase()) }}
+            {{ city.translatedName }}
         </l-tooltip>
         <l-popup
             :options="{
@@ -194,6 +194,7 @@ export default {
             required: true
         },
 
+        // index of active city popup in chartData
         activeCityPopup: {
             type: Number,
             required: false,

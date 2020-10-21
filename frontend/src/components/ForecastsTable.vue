@@ -12,7 +12,7 @@
     id="table"
 >
 	<template v-slot:head()="data"><!-- header custom rendering-->
-		<!-- on sortable field, clear sorting on right click and prevent context menu -->
+		<!-- on sortable field, clear sorting on right click -->
 		<span v-if="data.field.sortable"
 			@click.right.prevent="sortingChanged({ sortBy: null, sortDesc: null })"
 		>
@@ -33,9 +33,7 @@
                 {{ data.value }}
             </span>
             <!-- city selected, make selected city name bold -->
-            <strong v-else-if="data.value === forecastData[selectedRow].name ||
-                reverseTranslationFunction(data.value) === forecastData[selectedRow].name"
-            >
+            <strong v-else-if="data.value === forecastData[selectedRow].translatedName">
                 {{ data.value }}
             </strong>
             <!-- city selected, render not selected city names without formatting -->
@@ -90,14 +88,6 @@ export default {
 			required: false,
 			default: function() {
 				return { height: '70vh' };
-			}
-		},
-
-		reverseTranslationFunction: { // translates city names from el to en
-			type: Function,
-			required: false,
-			default: function(name) {
-				return name;
 			}
 		}
 	},
