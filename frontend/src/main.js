@@ -17,7 +17,7 @@ Vue.use(VueRouter)
 
 const routes = [
   { path: '/', component: Map },
-  { path: '/plots', component: Forecasts },
+  { path: '/forecasts', component: Forecasts },
   { path: '/about', component: About },
   { path: '/terms', component: Terms },
   { path: '*', component: PageNotFound } //catch all 404

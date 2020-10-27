@@ -18,7 +18,7 @@
 
 	  <b-navbar-nav class="ml-auto" style="z-index: 9999;"><!-- draw dropdown menu on top of all other elements -->
 		<b-nav-item><router-link class="regular" to="/" exact>{{$t('meteomap')}}</router-link></b-nav-item>
-		<b-nav-item><router-link class="regular" to="/plots">{{$t('plots')}}</router-link></b-nav-item>
+		<b-nav-item><router-link class="regular" to="/forecasts">{{$t('forecasts')}}</router-link></b-nav-item>
 		<b-nav-item><router-link class="regular" to="/about">{{$t('about')}}</router-link></b-nav-item>
 		<b-nav-item><router-link class="regular" to="/terms">{{$t('terms of use')}}</router-link></b-nav-item>
 		<LanguageSwitcher></LanguageSwitcher>
