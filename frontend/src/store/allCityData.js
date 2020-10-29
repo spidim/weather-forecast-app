@@ -1,4 +1,5 @@
 import BackendApiHandler from '../utils/BackendApiHandler.js'
+import store from './'
 
 const state = () => ({
 	allCityData: [],
@@ -33,7 +34,10 @@ const actions = {
 		}
 
 		initDataOnMap();
-		context.commit('translateCityNames');
+	},
+
+	translateCityNames: context => {
+		context.commit('translateCityNames')
 	}
 }
 

@@ -34,6 +34,7 @@ store.watch(
 store.watch(
 	(state, getters) => getters['allCityData/getLastFetch'], // when forecast data is fetched
 	(newValue, oldValue) => {
+		store.dispatch('allCityData/translateCityNames');
 		store.dispatch('chartData/generateChartData', store.getters['allCityData/getAllCityData']); // generate plot data
 		if (debug) {
 			console.log(`City forecast data fetched on ${new Date(newValue)}`);
