@@ -12,7 +12,7 @@ const config = {
   mode: 'development',
   entry: './src/main.js',
   output: {
-    path: path.resolve(__dirname, './dist'),
+    path: path.resolve('./dist'),
     filename: 'build.js'
   },
   resolve: {

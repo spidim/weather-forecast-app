@@ -4,217 +4,164 @@
   Mapping component
 
   @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
+  @author Georgios Traianos <gtraiano@gmail.com>
   @version 1.0
  -->
 
 <template>
-    <b-container fluid>
-        <b-alert show variant="dark" dismissible>
-          {{$t('map prompt')}}
-        </b-alert>
+<b-container fluid>
+    <b-alert show variant="dark" dismissible>
+        {{$t('map prompt')}}
+    </b-alert>
 
-        <b-row class="topinfo">
-            <b-col>
-            </b-col>
-        </b-row>
-        <b-row>
-            <b-col>
-            </b-col>
-            <b-col cols=10>
-                <l-map
-                    :options="{
-                        attributionControl: false,
-                        preferCanvas: true,
-                        wheelPxPerZoomLevel: activeCityPopup !== -1 ? Number.MAX_VALUE : 60 // prevent wheel zooming when popup is displayed
-                    }"
-                    style="height: 80vh; width: 100%; margin-left: auto; margin-right: auto;"
-                    :zoom="zoom"
-                    :center="center"
-                    @update:zoom="zoomUpdated"
-                    @update:center="centerUpdated"
-                    @update:bounds="boundsUpdated"
-                >
+    <b-row class="topinfo">
+        <b-col/>
+    </b-row>
 
-                    <l-tile-layer :url="mapUrl"></l-tile-layer>
+    <!-- display map -->
+    <b-row>
+        <b-col/>
 
-                    <l-control-attribution
-                        position="bottomright"
-                        prefix="<a href='https://www.openstreetmap.org/copyright'>© OpenStreetMap contributors</a>"
-                    ></l-control-attribution>
-                    
-                    <l-marker v-for="(city, index) in allCityData" :key="`${city.coords.lat},${city.coords.lon}`"
-                        :lat-lng="[city.coords.lat,city.coords.lon]"
-                        :icon="l_icon(city.currWeatherIconId)"
-                        @popupclose="activeCityPopup = -1; resetZoom(index);"
-                        @popupopen="activeCityPopup = city.id"
-                    >
-                        <l-tooltip
-                            :options="{
-                                direction: 'bottom',
-                                offset: [iconOptions.iconAnchor[0], iconOptions.iconAnchor[1]/2],
-                                opacity: activeCityPopup !== city.id ? 0.9 : 0 // hide active city popup tooltip
-                            }"
-                        >
-                            {{ $t(city.name.toLowerCase()) }}
-                        </l-tooltip>
-                        <l-popup
-                            :options="{
-                                'maxWidth': 'auto',
-                                offset: [iconOptions.iconAnchor[0], 0]
-                            }"
-                        >
-                            <PopupViewChart
-                                :chartData="chartData[index]"
-                                :active="activeCityPopup === city.id"
-                                :ref="index"
-                            >
-                            </PopupViewChart>
-                        </l-popup>
-                    </l-marker>
-                </l-map>
-            </b-col>
+        <b-col cols=10>
+            <GeneralMap
+                height="80vh"
+                width="100%"
+                :zoom="zoom"
+                :center="center"
+                :mapUrl="mapUrl"
+                :mapIconScale="iconScale"
+                :markerData="allCityData"
+                :chartData="chartData"
+                :openWeatherOptions="options"
+                :openWeatherTileUrls="owGenerateUrls"
+                :activeCityPopup="activeCityPopup"
+                :activeOpenWeatherLayers="activeLayers"
+                @zoomUpdated="value => $emit('zoomUpdated', value)"
+                @centerUpdated="value => $emit('centerUpdated', value)"
+                @boundsUpdated="value => $emit('boundsUpdated', value)"
+                @activeCityPopupUpdated="value => $emit('activeCityPopupUpdated', value)"
+                @activeOpenWeatherLayersUpdated="layers => $emit('activeOpenWeatherLayersUpdated', layers)"
+            /><!-- alternatively update data member directly (e.g. zoom = value) -->
+        </b-col>
 
-            <b-col>
-            </b-col>
-        </b-row>
+        <b-col/>
+    </b-row>
 
-        <b-row class="pt-1">
-            <b-col>
-            </b-col>
-        </b-row>
+    <b-row class="pt-1">
+        <b-col/>
+    </b-row>
 
-        <b-row align-v="end" class="pb-0 mb-0">
-            <b-col>
-            </b-col>
+    <!-- display center, zoom, bounds tags -->
+    <b-row align-v="end" class="pb-0 mb-0">
+        <b-col/>
 
-            <b-col cols=2>
-                <span><strong>{{$t('center')}}</strong></span>
-            </b-col>
+        <b-col cols=2>
+            <span><strong>{{$t('center')}}</strong></span>
+        </b-col>
 
-            <b-col cols=2>
-                <span><strong>{{$t('zoom')}}</strong></span>
-            </b-col>
+        <b-col cols=2>
+            <span><strong>{{$t('zoom')}}</strong></span>
+        </b-col>
 
-            <b-col cols=6>
-                <span><strong>{{$t('bounds')}}</strong></span>
-            </b-col>
+        <b-col cols=6>
+            <span><strong>{{$t('bounds')}}</strong></span>
+        </b-col>
 
-            <b-col>
-            </b-col>
-        </b-row>
+        <b-col/>
+    </b-row>
 
-        <b-row align-v="start" class="pt-0 mt-0">
-            <b-col>
-            </b-col>
+    <!-- display center, zoom, bounds values -->
+    <b-row align-v="start" class="pt-0 mt-0">
+        <b-col/>
 
-            <b-col cols=2>
-                <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ centerSimple }}</span>
-            </b-col>
+        <b-col cols=2>
+            <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ centerSimple }}</span>
+        </b-col>
 
-            <b-col cols=2>
-                <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ zoom }}</span>
-            </b-col>
+        <b-col cols=2>
+            <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ zoom }}</span>
+        </b-col>
 
-            <b-col cols=6>
-                <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ boundsSimple }}</span>
-            </b-col>
+        <b-col cols=6>
+            <span style="font-family: 'Roboto Mono', courier; font-size: 90%">{{ boundsSimple }}</span>
+        </b-col>
 
-            <b-col>
-            </b-col>
-        </b-row>
+        <b-col/>
+    </b-row>
 
-    </b-container>
+</b-container>
 </template>
 
 <script>
-import { LMap, LTileLayer, LMarker, LIcon, LPopup, LControlAttribution, LTooltip } from 'vue2-leaflet'
-import { Icon }  from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-//import PopupView from './PopupView.vue'
-import PopupViewChart from './PopupViewChart.vue'
-import BackendApiHandler from '../utils/BackendApiHandler.js'
 import { mapGetters } from 'vuex'
-
-// this part resolve an issue where the markers would not appear
-delete Icon.Default.prototype._getIconUrl;
-
-Icon.Default.mergeOptions({
-  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-  iconUrl: require('leaflet/dist/images/marker-icon.png'),
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png')
-});
-
-
+import GeneralMap from './GeneralMap.vue'
 
 export default {
     name: 'Map',
 
     components: {
-        LMap,
-        LTileLayer,
-        LMarker,
-        LIcon,
-        LPopup,
-        LControlAttribution,
-        PopupViewChart,
-        LTooltip
-    },
-
-    props: {
-        iconScale: { // scale map icon size
-            type: Number,
-            required: false,
-            default: 1.0
-        }
+        GeneralMap
     },
 
     data () {
         return {
+            /* map url and options */
             mapUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
             zoom: 6,
-            center: {lat: 38.436111, lng: 26.112442},
+            center: { lat: 38.436111, lng: 26.112442 },
             bounds: null,
-            activeCityPopup: -1 // city id of displayed popup
-        };
-    },
+            iconScale: 1.0,
 
-    methods: {
-        zoomUpdated (zoom) {
-          this.zoom = zoom;
-        },
-        
-        centerUpdated (center) {
-          this.center = center;
-        },
-        
-        boundsUpdated (bounds) {
-          this.bounds = bounds;
-        },
-        
-        l_icon(icon) {
-            //console.log(...this.calculateIconOptions().iconAnchor)
-            return L.icon({
-                iconUrl: icon,
-                ...this.iconOptions
-            })
-        },
-        
-        resetZoom(cityIndex) {
-            this.$refs[cityIndex][0].reset([0,1,2])
-        },
-        
-        calculateIconOptions(scale = this.iconScale) {
-            return {
-                iconSize:     [Math.round(64*scale), Math.round(64*scale)], // size of the icon
-                shadowSize:   [Math.round(50*scale), Math.round(64*scale)], // size of the shadow
-                iconAnchor:   [Math.round(16*scale), Math.round(32*scale)], // point of the icon which will correspond to marker's location
-            }
-        }
+            activeCityPopup: -1, // city id of displayed popup
+          
+            options: [], // OpenWeather tiles switch box options
+            activeLayers: [], // selected OpenWeather tiles (temperature and clouds by default, checks 'activeLayers' item in localStorage on created()
+        };
     },
 
     created() {
         console.log('Load our data first');
-        this.$store.dispatch('allCityData/setAllCityDataAsync')
+        this.$store.dispatch('allCityData/setAllCityDataAsync');
+
+        this.options = this.populateOptions();
+
+        if(window.localStorage.getItem('activeLayers')) { // load control panel options from local storage
+            this.activeLayers = JSON.parse(window.localStorage.getItem('activeLayers'))
+        }
+        else {
+            this.activeLayers = ['temp_new', 'clouds_new'] // default values
+        }
+    },
+
+    mounted() {
+        // map event listeners
+        this.$on('zoomUpdated', value => { this.zoom = value; });
+        this.$on('centerUpdated', value => { this.center = value; });
+        this.$on('boundsUpdated', value => { this.bounds = value; });
+        this.$on('activeCityPopupUpdated', value => { this.activeCityPopup = value; });
+        this.$on('activeOpenWeatherLayersUpdated', value => { this.activeLayers = value; });
+    },
+
+    beforeUpdate() {
+        // save control panel options
+        window.localStorage.setItem('activeLayers', JSON.stringify(this.activeLayers));
+
+        // update switch box labels on languange change
+        this.options = this.populateOptions();
+    },
+
+    methods: {
+        populateOptions() {
+        // switch box options
+        // available OpenWeather tiles: [ 'temp_new', 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new' ], 
+            return [
+                { text: this.$t('temperature'), value: 'temp_new'} ,
+                { text: this.$t('clouds'), value: 'clouds_new' },
+                { text: this.$t('precipitation'), value: 'precipitation_new' },
+                { text: this.$t('pressure'), value: 'pressure_new' },
+                { text: this.$t('wind'), value: 'wind_new' }
+            ]
+        }
     },
 
     computed: {
@@ -240,9 +187,9 @@ export default {
                 .replace("_northEast", "NE");
         },
 
-        iconOptions() {
-            return this.calculateIconOptions()
-
+        owGenerateUrls() {
+            /* creates urls for active OpenWeather map layers */
+            return this.activeLayers.map(layer => `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${process.env.OW_USER_TOKEN}`)
         },
 
         // map store state to computed properties

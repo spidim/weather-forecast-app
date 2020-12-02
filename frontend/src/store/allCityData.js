@@ -1,4 +1,15 @@
+/*
+  Copyright (c) 2019-2020
+
+  Control buttons component
+
+  @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
+  @author Georgios Traianos <gtraiano@gmail.com>
+  @version 1.0
+ */
+
 import BackendApiHandler from '../utils/BackendApiHandler.js'
+import store from './'
 
 const state = () => ({
 	allCityData: [],
@@ -33,6 +44,10 @@ const actions = {
 		}
 
 		initDataOnMap();
+	},
+
+	translateCityNames: context => {
+		context.commit('translateCityNames')
 	}
 }
 
@@ -43,6 +58,15 @@ const mutations = {
 
 	setLastFetch: (state, datetime) => {
 		state.lastFetch = datetime
+	},
+
+	translateCityNames: (state) => {
+		state.allCityData = state.allCityData.map(city => {
+			return {
+				...city,
+				translatedName: store.i18n.t(city.name.toLowerCase())
+			}
+		})
 	}
 }
 

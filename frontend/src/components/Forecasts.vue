@@ -4,6 +4,7 @@
   Detailed forecast table component
 
   @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
+  @author Georgios Traianos <gtraiano@gmail.com>
   @version 1.0
  -->
 
@@ -28,38 +29,20 @@
             <b-col class="p-3">{{ tableTitle }}</b-col>
         </b-row>
         <b-row md="12" class="mt-4">
-            <b-col class="">
+            <b-col>
                 <!-- forecasts table renders only if allCityData is populated -->
-                <b-table v-if="allCityData && allCityData.length"
-                    striped hover borderless sticky-header
-                    :style="{height: (selectedCity !== -1 ? '25vh' : '70vh')}"
-                    small head-variant="light"
-                    :items="forecastItems"
-                    :fields="forecastFields"
-                >
-                    <!-- if selectedCity is set to an entry in allCityData -->
-                    <template v-if="selectedCity !== -1" v-slot:[translateTableKey()]="data">
-                        <!-- click city name to load plot -->
-                        <a href="" v-on:click="toggleShowPlot($event, data.value)">
-                            <!-- make selected city name bold, else regular -->
-                            <strong v-if="data.value === allCityData[selectedCity].name ||
-                                      ElToEnCityName(data.value) === allCityData[selectedCity].name"
-                            >
-                                {{ data.value }}
-                            </strong>
-                            <span v-else>
-                                {{ data.value }}
-                            </span>
-                        </a>
-                    </template>
-                    <!-- otherwise render city name without formatting -->
-                    <template v-else v-slot:[translateTableKey()]="data">
-                        <!-- click city name to load plot -->
-                        <a href="" v-on:click="toggleShowPlot($event, data.value)">
-                            {{ data.value }}
-                        </a>
-                    </template>
-                </b-table>
+                <ForecastsTable v-if="allCityData && allCityData.length"
+                    :forecastData="allCityData"
+                    :tableItems="forecastItems"
+                    :tableFields="forecastFields"
+                    :selectedRow="selectedCity"
+                    :sortBy="tableSortBy"
+                    :sortDesc="tableSorted"
+                    :tableStyle="tableStyle"
+                    @selectedRowUpdate="(index, value) => { $emit('selectedRowUpdate', index, value) }"
+                    @sortingChanged="value => { $emit('sortingChanged', value) }"
+                    ref="table"
+                />
                 <!-- otherwise display no forecasts message -->
                 <h3 v-else>{{ $t('no forecasts') }}</h3>
             </b-col>
@@ -69,8 +52,8 @@
             <b-row class="text-center">
                 <b-col>
                     <!-- plot timeline duration control -->
-                    <b-form-spinbutton id="endHours" :value="endHours" min="1" max="48" size="sm" inline @change="endHours = $event">
-                    </b-form-spinbutton>
+                    <b-form-spinbutton id="endHours" :value="endHours" min="1" max="48" size="sm" inline @change="endHours = $event"
+                    />
                     <span>{{ $t('hours') }}</span>
                 </b-col>
                 <b-col cols="8">
@@ -80,10 +63,10 @@
                 </b-col>
                 <b-col>
                     <!-- container close button -->
-                    <b-button-close @click="selectedCity = -1"></b-button-close>
+                    <b-button-close @click="selectedCity = -1;" />
                 </b-col>
             </b-row>
-            <LineChart :chart-data="prepareDataset(endHours, selectedVar)"></LineChart>
+            <LineChart :chart-data="preparePlotData(endHours, selectedVar)" />
         </b-container>
     </b-container>
 </div>
@@ -93,46 +76,42 @@
 import Controls from './Controls.vue'
 import Modal from './Modal.vue'
 import LineChart from './LineChart.vue'
-import { ElToEnCityName } from '../lang/cityName' // used to translate greek city names back to english
 import { mapGetters } from 'vuex'
+import ForecastsTable from './ForecastsTable.vue'
 
 export default {
   name: 'Forecasts',
-  
-  mixins: [{
-      methods: { ElToEnCityName }
-  }],
 
   data() {
       return {
           infoModalId: "infoModal1",
           selectedVar: 'temperature',
           selectedCity: -1, // index of city in allCityData
-          endHours: 48 // timeline duration in hours for plot
+          endHours: 48, // timeline duration in hours for plot
+          tableSortBy: null, // field name to sort forecasts table by
+          tableSorted: null, // forecasts table is sorted (null: no, true: desc, false: asc)
+          tableStyle: { height: '70vh' } // table css styling
       }
   },
 
   components: {
       Controls,
       Modal,
-      LineChart
+      LineChart,
+      ForecastsTable
   },
 
   methods: {
-      toggleShowPlot (event, cityName) {
-      /* load plot for cityName */
-          event.preventDefault();
-
-          this.selectedCity = this.allCityData.findIndex(city =>
+      findCityIndex (cityName) {
+      /* find city index */
+          return this.allCityData.findIndex(city =>
               (
-                  city.name === (this.$i18n.locale === 'el'
-                      ? this.ElToEnCityName(cityName) // translate city name back to English, otherwise no match (because allCityData does not get translated!)
-                      : cityName
-                  )
+                  city.translatedName === cityName
               )
           )
       },
-      prepareDataset: function (endHours, variable) {
+
+      preparePlotData: function (endHours, variable) {
       /* prepares dataset for plot */
           let chartdata = this.chartData[this.selectedCity].variables[this.selectedVar] // get selected variable measurements
           delete chartdata.title // remove plot title
@@ -140,14 +119,16 @@ export default {
 
           return chartdata
       },
-      translateTableKey() { // to overcome dynamic argument expression constraints (https://vuejs.org/v2/guide/syntax.html#Dynamic-Argument-Expression-Constraints)
-          // tried passing an argument to the function too, it works but gives a warning
-          return `cell(${this.$t('city')})`;
+
+      findSelectedCityIndexSorted() {
+      /* return selected city index in sorted names table */
+          return this.sortedCityNames.findIndex(name => name === this.allCityData[this.selectedCity].translatedName);
       }
   },
 
   computed: {
       forecastItems: function () {
+      /* prepares table rows */
           let data_for_table = [];
           this.allCityData.forEach(city => {
               var curr_data = {
@@ -162,7 +143,9 @@ export default {
           });
           return data_for_table;
       },
+
       forecastFields: function () {
+      /* prepares table fields (i.e. column names) */
           var currentDate = new Date(); // correct if we have fresh data, otherwise we should read start date from allCityData
           var options = { weekday: 'short', hour: '2-digit'};
           var fields = [
@@ -185,6 +168,7 @@ export default {
           }
         return fields;
       },
+
       tableTitle: function () {
           let unit_map = {
               "temperature" : "\u2103",
@@ -193,17 +177,76 @@ export default {
           };
           return `${this.$t(this.selectedVar)} ${this.$t('in')} ${unit_map[this.selectedVar]}`;
       },
+
+      sortedCityNames() {
+      /* sorted city names according to locale */
+          return this.allCityData.map(row => row.translatedName).sort(
+              (a, b) => {
+                  if(this.tableSorted)
+                      return b >= a;
+                  else
+                      return b < a;
+              }
+          );
+      },
+
       ...mapGetters({
           allCityData: 'allCityData/getAllCityData'
       }),
+
       ...mapGetters({
           chartData: 'chartData/getChartData'
+      }),
+
+      ...mapGetters({
+          locale: 'locale/getLocale'
       })
+  },
+
+  watch: {
+      selectedCity(newValue, oldValue) {
+          this.tableStyle.height = newValue === -1 ? '70vh' : '25vh';
+          
+          if (newValue === -1) { // plot is closed
+              this.$refs.table.scrollToRow(0);
+          }
+          else if (oldValue === -1) { // plot is opened
+              if (this.tableSorted === null) {
+                  this.$refs.table.scrollToRow(newValue); // scroll to index directly
+              }
+              else {
+                  this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());
+              }
+          }
+      },
+
+      tableSorted(newValue, oldValue) {
+          if(this.selectedCity !== -1) { // scroll sorted table to follow selected city
+              this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted());
+          }
+          if(newValue === null) { // scroll unsorted table to follow selected city
+              this.$refs.table.scrollToRow(this.selectedCity);
+          }
+      },
+
+      locale() {
+          if(this.tableSortBy) {
+              this.tableSortBy = this.$t('city'); // translate sort key
+              if(this.selectedCity !== -1) {
+                  this.$refs.table.scrollToRow(this.findSelectedCityIndexSorted()); // scroll table to correct selected city row when table is sorted
+              }
+          }
+      }
   },
   
   created() {
       console.log('Load our data first');
-      this.$store.dispatch('allCityData/setAllCityDataAsync')
+      this.$store.dispatch('allCityData/setAllCityDataAsync');
+      this.$on('selectedRowUpdate', (index, value) => { this.selectedCity = this.findCityIndex(value); });
+      this.$on('sortingChanged', ({ sortBy, sortDesc }) => {
+          this.tableSortBy = sortBy;
+          this.tableSorted = sortDesc;
+      });
   }
 }
 </script>

@@ -1,30 +1,76 @@
+<!--
+  Copyright (c) 2019-2020
+
+  Control buttons component
+
+  @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
+  @author Georgios Traianos <gtraiano@gmail.com>
+  @version 1.0
+ -->
+
 <template>
 <div class="popup">
     <b-card no-body>
-        <b-tabs pills>
+        <b-container v-if="!chartData" class="plot"><!-- no data to show -->
+            <div class="row justify-content-center">
+                <div class="col-12 text-center"><h3>{{$t('no data')}}</h3></div>
+            </div>
+            <div class="row justify-content-center align-items-end">
+                <div class="col-12 text-center align-self-end">
+                    <b-icon-x-circle scale=12 shift-v="-120%" />
+                </div>
+            </div>
+        </b-container>
+        <b-tabs v-else pills>
         	<b-tab no-body v-for="(variable, index) in forecastVariables" :title="$t(variable)" :key="index">
         		<b-container style="overflow: auto;">
         			<b-row class="p-0">
                         <b-col md="12" class="p-0 m-0 b-0 plot"
                             align="center"
                             v-bind:id="'container' + index"
-                            @wheel.prevent="$emit('wheel', $event, index)"
+                            @wheel.prevent="!openMenu && $emit('wheel', $event, index)"
                             @dragstart.prevent
                             v-on:mousedown = "dragStart($event)"
                             v-on:mouseup = "dragStop($event)"
                             v-on:mousemove = "dragOn($event, index)"
                         >
                             <!-- buttons functional only when mouse is hovering and/or no plot dragging occurs -->
-                            <b-button-group 
-                                v-if="!dragging || showButtons"
+                            <b-button-group
+                                v-if="!dragging || showToolbar"
                                 size="sm" class="button-group smooth slow"
-                                v-bind:style="{opacity: showButtons}"
-                                @mouseenter="showButtons = 1;"
-                                @mouseleave="showButtons = 0;"
+                                v-bind:style="{opacity: showToolbar}"
+                                @mouseenter="showToolbar = 1 || openMenu;"
+                                @mouseleave="showToolbar = 0 || openMenu;"
                             >
-                                <b-button variant="light" @click="zoom(0.2, index);"><strong>+</strong></b-button>
-                                <b-button variant="light" @click="zoom(-0.2, index);"><strong>-</strong></b-button>
-                                <b-button variant="light" @click="reset([index]);"><strong>&#8635;</strong></b-button>
+                                <b-button variant="light" @click="zoom(0.2, index);">
+                                    <b-icon-zoom-in/>
+                                </b-button>
+                                <b-button variant="light" @click="zoom(-0.2, index);">
+                                    <b-icon-zoom-out/>
+                                </b-button>
+                                <b-button variant="light" @click="reset([index]);">
+                                    <b-icon-arrow-clockwise/>
+                                </b-button>
+                                <b-dropdown size="sm" variant="light"
+                                    @shown="openMenu = 1"
+                                    @hidden="openMenu = 0"
+                                >
+                                    <template v-slot:button-content>
+                                        <b-icon-download/>
+                                    </template>
+                                    <b-dropdown-header>
+                                        {{$t('size')}}
+                                    </b-dropdown-header>
+                                    <b-dropdown-item v-for="(size, index) in [$t('small'), $t('normal'), $t('large')]"
+                                        :key="index"
+                                        class="container-fluid p-0 m-0"
+                                        size="sm"
+                                        :style="{'font-size': 75+'%'}"
+                                        @click="saveImage(variable, Math.pow(2, index))"
+                                    >
+                                        {{size}}
+                                    </b-dropdown-item>
+                                </b-dropdown>
                             </b-button-group>
                             <!-- render plot only if popup is active -->
                             <LineChart
@@ -36,9 +82,9 @@
                                 v-bind:style="{
                                     transform: 'scale(' + zoomScale[index] + ')',
                                     cursor: dragging && zoomScale[index] > 1.0 ? 'grab' : 'auto'
-                                }"  
-                            >        
-                            </LineChart>
+                                }"
+                                :ref="variable"
+                            />
                         </b-col>
                     </b-row>
         		</b-container>
@@ -49,8 +95,9 @@
 </template>
 
 <script type = "text/javascript">
-import Vue from 'vue'
-import LineChart from './LineChart.vue'
+import Vue from 'vue';
+import LineChart from './LineChart.vue';
+import { BIconDownload, BIconZoomIn, BIconZoomOut, BIconArrowClockwise, BIconXCircle } from 'bootstrap-vue';
 
 export default {
     props: {
@@ -61,12 +108,17 @@ export default {
         active: { // popup active flag (if set, renders plot immediately on chartData changes)
             type: Boolean,
             required: false,
-            default: false
+            default: true
         }
     },
 
     components: {
-        LineChart
+        LineChart,
+        BIconDownload,
+        BIconZoomIn,
+        BIconZoomOut,
+        BIconArrowClockwise,
+        BIconXCircle
     },
 
     data: function() {
@@ -81,14 +133,15 @@ export default {
                 }
             },
             dragging: false, /* dragging state */
-            showButtons: 0, /* zoom buttons opacity */
+            showToolbar: 0, /* toolbar opacity */
+            openMenu: 0 /* download menu is open */
         }
     },
 
     computed: {
         forecastVariables: function() {
         /* returns a list of plot variables */
-            return Object.keys(this.chartData.variables)
+            return Object.keys(this.chartData.variables);
         }
     },
 
@@ -108,21 +161,26 @@ export default {
 
         dragStart: function(event) {
         /* set dragging on and save initial mouse coordinations */
-            if(event.which == 1){ /* only on left click */
+            if(event.which == 1) { /* only on left click */
                 this.dragging = true;
-                this.dragCoord.start.x = event.layerX
-                this.dragCoord.start.y = event.layerY
+                this.dragCoord.start.x = event.layerX;
+                this.dragCoord.start.y = event.layerY;
+                this.openMenu = 0; // close download menu and start dragging
             }
         },
 
         dragOn: function(event, index) {
         /* update coordinations while dragging and scroll image */
-            if(this.dragging && event.buttons && event.which == 1) { /* check left click and within element bounds */
-                this.dragCoord.end.x = event.layerX;
-                this.dragCoord.end.y = event.layerY;
-                let container = this.$el.querySelector("#container" + index);
-                container.scrollLeft -= this.dragCoord.end.x - this.dragCoord.start.x;
-                container.scrollTop -= this.dragCoord.end.y - this.dragCoord.start.y;
+            if(this.dragging && event.buttons && event.which == 1) { /* check left click and dragging */
+                this.showToolbar = 0; // force hide toolbar
+                
+                let container = this.$el.querySelector("#container" + index); // contains the chart
+                if (event.target != container) { // scroll image only when mouse pointer within container bounds
+                    this.dragCoord.end.x = event.layerX;
+                    this.dragCoord.end.y = event.layerY;
+                    container.scrollLeft -= this.dragCoord.end.x - this.dragCoord.start.x;
+                    container.scrollTop -= this.dragCoord.end.y - this.dragCoord.start.y;
+                }
             }
         },
 
@@ -130,6 +188,10 @@ export default {
         /* stops dragging action */
             if(event.which == 1)
                 this.dragging = false;
+        },
+
+        saveImage(variable, scale = 1) {
+            window.open(this.$refs[variable][0].exportImage(scale));
         }
     },
 
@@ -140,7 +202,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .popup {
     width: 345px;
 }
@@ -180,5 +242,10 @@ export default {
     position: fixed;
     top: 55px;
     left: 30px;
+}
+
+*:focus {
+    outline: none;
+    box-shadow: none;
 }
 </style>

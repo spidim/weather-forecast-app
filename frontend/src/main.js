@@ -6,9 +6,9 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap-vue/dist/bootstrap-vue.css"
 import Map from './components/Map.vue';
 import Forecasts from './components/Forecasts.vue';
-import MeteoMap from './components/MeteoMap.vue';
 import About from './components/About.vue'
 import Terms from './components/Terms.vue'
+import PageNotFound from './components/404.vue'
 import i18n from './lang/i18n.js'
 import store from './store'
 
@@ -16,11 +16,11 @@ Vue.use(BootstrapVue)
 Vue.use(VueRouter)
 
 const routes = [
-  { path: '/forecast', component: Forecasts },
-  { path: '/meteomap', component: MeteoMap },
   { path: '/', component: Map },
+  { path: '/forecasts', component: Forecasts },
   { path: '/about', component: About },
-  { path: '/terms', component: Terms }
+  { path: '/terms', component: Terms },
+  { path: '*', component: PageNotFound } //catch all 404
 ]
 
 const router = new VueRouter({

@@ -4,6 +4,7 @@
   Main App File
 
   @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
+  @author Georgios Traianos <gtraiano@gmail.com>
   @version 1.0
  -->
 
