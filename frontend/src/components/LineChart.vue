@@ -1,3 +1,13 @@
+<!--
+  Copyright (c) 2019-2020
+
+  Control buttons component
+
+  @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
+  @author Georgios Traianos <gtraiano@gmail.com>
+  @version 1.0
+ -->
+ 
 <script>
 import { Line, mixins } from 'vue-chartjs' // We specify what type of chart we want from vue-chartjs and the mixins module
 const { reactiveProp } = mixins

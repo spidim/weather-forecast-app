@@ -1,3 +1,13 @@
+<!--
+  Copyright (c) 2019-2020
+
+  Control buttons component
+
+  @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
+  @author Georgios Traianos <gtraiano@gmail.com>
+  @version 1.0
+ -->
+
 <template>
 <b-table v-if="forecastData && forecastData.length"
     striped hover borderless sticky-header

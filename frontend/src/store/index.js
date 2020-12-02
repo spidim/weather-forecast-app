@@ -1,3 +1,13 @@
+/*
+  Copyright (c) 2019-2020
+
+  Control buttons component
+
+  @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
+  @author Georgios Traianos <gtraiano@gmail.com>
+  @version 1.0
+*/
+
 import Vue from 'vue'
 import Vuex from 'vuex'
 import chartData from './chartData'

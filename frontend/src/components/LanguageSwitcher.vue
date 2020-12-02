@@ -1,6 +1,12 @@
-/* Language switcher component
-   Provides a UI interface to interact with vue-i18n for switching language
-*/
+<!--
+  Copyright (c) 2019-2020
+
+  Control buttons component
+
+  @author Spiros Dimopoulos <sdimopoulos@irisweb.gr>
+  @author Georgios Traianos <gtraiano@gmail.com>
+  @version 1.0
+ -->
 
 <template>
     <!--b-nav-item-dropdown :text="getActiveLanguage()" right-->

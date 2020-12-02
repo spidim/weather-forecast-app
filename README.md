@@ -67,5 +67,6 @@ it initializes the cache, but then subsequent requests are very fast.
 
 ### License - Proprietary
 Copyright - Spiros Dimopoulos <sdimopoulos@irisweb.gr>
-It is peovided as is without any guarantee for demonstration purposes solely.
+Co-author - Georgios Traianos <gtraiano@gmail.com>
+It is provided as is without any guarantee for demonstration purposes solely.
 Not to be redistributed in any form, copied or sold. 
